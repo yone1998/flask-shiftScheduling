@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>希望シフト</h3>
+<form method="POST">
+    <div class="createWorkTimeSelect">
+        <div class="empty"></div>
+        
+        <div class="startTimeLabel">
+            {% for startTime in START_SELECT_LIST %}
+                <label>{{startTime}}</label>
+            {% endfor %}
+        </div>
+
+        <div class="endTimeLabel">
+            {% for endTime in END_SELECT_LIST %}
+                <label>{{endTime}}</label>
+            {% endfor %}
+        </div>
+        
+        {% for i in range(nWorkDay) %}
+            <hr>
+            <div class="dayLabel">{{monthDayList[i]}}</div>
+
+            <div class="workTimeRadio">
+                {% for iStart in START_SELECT_LIST %}
+                    {% if iStart == START_END_DEFAULT[0] %}
+                        <input type="radio" value={{iStart}} name={{workTimeRadioNameList[2*i]}} checked>
+                    {% else %}
+                        <input type="radio" value={{iStart}} name={{workTimeRadioNameList[2*i]}}>
+                    {% endif %}
+                {% endfor %}
+            </div>
+                
+            <div class="workTimeRadio">
+                {% for iEnd in END_SELECT_LIST %}
+                    {% if iEnd == START_END_DEFAULT[1] %}
+                        <input type="radio" value={{iEnd}} name={{workTimeRadioNameList[2*i+1]}} checked>
+                    {% else %}
+                        <input type="radio" value={{iEnd}} name={{workTimeRadioNameList[2*i+1]}}>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>    
+</form>
+{% endblock %}
