@@ -1,0 +1,29 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}HOME{% endblock %}
+{% block head %}
+<title>HOME<title/>
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/userHome.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <br>
+    <a href="/create/hopeDay" role="button">希望シフトの新規作成</a>
+    <br>
+    <a href="/logout" role="button">ログアウト</a>
+    <hr>
+    <h4>{{ hopeShiftStr }}</h4>
+    {% for post in posts %}
+    <article>
+        <h2>{{ post.title }}</h2>
+        <a href="/{{post.id}}/update" role="button">編集</a>
+        <a href="/{{post.id}}/delete" role="button">削除</a>
+        <p>作成日時： {{ post.created_at }}</p>
+        <p>{{ post.body }}</p>
+    </article>
+    <hr>
+    {% endfor %}
+</div>
+{% endblock %}

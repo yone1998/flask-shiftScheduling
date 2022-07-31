@@ -1,16 +1,23 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}ログインページ{% endblock %}
 
-{% block content %}
+{% block title %}ログイン{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/login.css') }}">
+{% endblock %}
+
+{% block body %}
 <div class="container">
     <h1>ログイン画面</h1>
     <p>{% if error %}{{ error }}{% endif %}</p>
     <form method="POST">
         <label for="" class="form-label">ユーザー名</label>
-        <input type="text" name="username" class="form-control">
+        <input type="text" name="userName" class="form-control">
         <label for="" class="form-label">パスワード</label>
         <input type="password" name="password" class="form-control">
         <input type="submit" value="ログイン" class="btn btn-primary">
     </form>
+    <br>
+    <a href="/signup" role="button">新規登録</a>
 </div>
 {% endblock %}
