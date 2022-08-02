@@ -7,17 +7,23 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
-    <h1>ログイン画面</h1>
-    <p>{% if error %}{{ error }}{% endif %}</p>
+<div class="login">
+    <h3>ログイン</h3>
+    <br>
+    {% if error %}
+        <p>{{ error }}</p>
+    {% endif %}
     <form method="POST">
-        <label for="" class="form-label">ユーザー名</label>
-        <input type="text" name="userName" class="form-control">
-        <label for="" class="form-label">パスワード</label>
+        <label class="form-label">姓</label>
+        <input type="text" name="userLastName" class="form-control">
+        <label class="form-label">名</label>
+        <input type="text" name="userFirstName" class="form-control">
+        <label class="form-label">パスワード</label>
         <input type="password" name="password" class="form-control">
+        <br>
         <input type="submit" value="ログイン" class="btn btn-primary">
     </form>
     <br>
-    <a href="/signup" role="button">新規登録</a>
+    <a href="/signup" role="button">新規登録の方はこちら</a>
 </div>
 {% endblock %}

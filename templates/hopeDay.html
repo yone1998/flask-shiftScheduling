@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "bootstrap/base.html" %}
 
 {% block title %}希望シフト作成{% endblock %}
 {% block head %}
@@ -8,49 +8,42 @@
 
 {% block body %}
 <div id="hopeDay">
-    <h4>希望シフト</h4>
-    <div class="explain">勤務可能日時を選択してください</div>
-    <a href="/userHome" role="button">ホームに戻る</a>
-    <a href="/create/hopeTime" role="button">次へ進む</a>
-    <div class="createStartEndLabel">
-        <div class="empty"></div>
-        <div class="startLabel">勤務開始時間</div>
-        <div class="startLabel">勤務終了時間</div>
-        <div class="unitLabel">（時）</div>
-    </div>
-    <form method="POST" class="createWorkTimeSelect">
-        <div class="empty"></div>
-
-        {% for iSMTWTFS in range( SMTWTFS | length ) %}
-            <div class="SMTWTFSLabel">
-                <label>{{SMTWTFS[iSMTWTFS]}}</label>
-            </div>
+    <h4>勤務可能日</h4>
+    <div class="explain">休みを希望する日のブロックをクリックして赤くしてください</div>
+    <br>
+    <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
+    <form method="POST" class="createWorkDaySelect">
+        <!-- 日 月 火 水 木 金 土 -->
+        {% for iSMTWTFS in SMTWTFS %}
+            {% if iSMTWTFS == '日' %}
+                <div class="calendarBlock SMTWTFS Sunday">{{ iSMTWTFS }}</div>
+            {% elif iSMTWTFS == '土' %}
+                <div class="calendarBlock SMTWTFS Saturday">{{ iSMTWTFS }}</div>
+            {% else %}
+                <div class="calendarBlock SMTWTFS">{{ iSMTWTFS }}</div>
+            {% endif %}
         {% endfor %}
         
-        {% for i in range( hopeDayStrList | length ) %}
-            <hr>
-            <div class="dayLabel">{{hopeDayStrList[i]}}</div>
-
-            <div class="workTimeRadio">
-                {% for iStart in START_SELECT_LIST %}
-                    {% if iStart == START_END_DEFAULT[0] %}
-                        <input type="radio" value={{iStart}} name={{workTimeRadioNameList[2*i]}} checked>
-                    {% else %}
-                        <input type="radio" value={{iStart}} name={{workTimeRadioNameList[2*i]}}>
-                    {% endif %}
-                {% endfor %}
-            </div>
-                
-            <div class="workTimeRadio">
-                {% for iEnd in END_SELECT_LIST %}
-                    {% if iEnd == START_END_DEFAULT[1] %}
-                        <input type="radio" value={{iEnd}} name={{workTimeRadioNameList[2*i+1]}} checked>
-                    {% else %}
-                        <input type="radio" value={{iEnd}} name={{workTimeRadioNameList[2*i+1]}}>
-                    {% endif %}
-                {% endfor %}
-            </div>
-        {% endfor %}    
+        {% for iBlock in range(SUM_BLOCKS_OF_CALENDAR) %}
+            {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= SUM_DAYS_OF_TARGET_MONTH+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
+                <div class="calendarBlock"></div>
+            {% else %}
+                {% if iBlock % (SMTWTFS | length) == 0 %}
+                    <button class="calendarBlock Sunday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}" onclick="server.switch(this.value)">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
+                {% elif iBlock % (SMTWTFS | length) == 6 %}
+                    <button class="calendarBlock Saturday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}" onclick="server.switch(this.value)">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
+                {% else %}
+                    <button class="calendarBlock" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}" onclick="server.switch(this.value)">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
+                {% endif %}
+                <!-- day2
+                rem=4
+                iBlock=5 -->
+            {% endif %}
+        {% endfor %}
     </form>
+    <br>
+    <a href="/{{ id }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
+    <a href="/{{ id }}/user/create/hopeTime" role="button" class="btn btn-primary">次に進む</a>
+    <br>
 </div>
 {% endblock %}

@@ -2,28 +2,25 @@
 
 {% block title %}HOME{% endblock %}
 {% block head %}
-<title>HOME<title/>
     {{ super() }}
     <link rel="stylesheet", href="{{ url_for('static', filename='css/userHome.css') }}">
 {% endblock %}
 
 {% block body %}
-<div class="container">
+<div class="userHome">
     <br>
-    <a href="/create/hopeDay" role="button">希望シフトの新規作成</a>
+    <a href="/{{ userId }}/user/create/hopeDay" role="button">希望シフトを作成して提出</a>
     <br>
     <a href="/logout" role="button">ログアウト</a>
     <hr>
-    <h4>{{ hopeShiftStr }}</h4>
-    {% for post in posts %}
-    <article>
-        <h2>{{ post.title }}</h2>
-        <a href="/{{post.id}}/update" role="button">編集</a>
-        <a href="/{{post.id}}/delete" role="button">削除</a>
-        <p>作成日時： {{ post.created_at }}</p>
-        <p>{{ post.body }}</p>
-    </article>
-    <hr>
-    {% endfor %}
+    <h4>{{ HOPE_SHIFT_STR }}</h4>
+    {% if error %}    
+        <p>{{ error }}</p>    
+    {% else %}
+        <p>作成日時： {{ hopeDay.created_at }}</p>
+        <p>提出者： {{ hopeDay.isMySubmission }}</p>
+        <a href="/{{ hopeDay.id }}/update" role="button" class="btn btn-primary">編集して再提出</a>
+        <a href="/{{ hopeDay.id }}/delete" role="button" class="btn btn-primary">提出を取り消す</a>
+    {% endif %}
 </div>
 {% endblock %}

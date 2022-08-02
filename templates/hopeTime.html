@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "bootstrap/base.html" %}
 
 {% block title %}希望シフト作成{% endblock %}
 {% block head %}
@@ -10,8 +10,6 @@
 <div id="hopeTime">
     <h4>希望シフト</h4>
     <div class="explain">勤務可能時間帯を選択してください</div>
-    <a href="/create/hopeDay" role="button">前に戻る</a>
-    <a href="/completeHopeShift" role="button">次へ進む</a>
     <div class="createStartEndLabel">
         <div class="empty"></div>
         <div class="startLabel">勤務開始時間</div>
@@ -34,7 +32,7 @@
         </div>
         
         {% for i in range( hopeDayStrList | length ) %}
-            <hr>
+
             <div class="dayLabel">{{ hopeDayStrList[i] }}</div>
 
             <div class="workTimeRadio">
@@ -56,7 +54,11 @@
                     {% endif %}
                 {% endfor %}
             </div>
-        {% endfor %}    
+        {% endfor %}
+        <br>
+        <a href="/{{ id }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
+        <input type="submit" value="希望シフトを提出する" class="btn btn-primary">
+        <br>
     </form>
 </div>
 {% endblock %}
