@@ -1,6 +1,6 @@
 import datetime, calendar, math
 
-def getNumWeekday(year,month,day): 
+def getNumWeekday(year,month,day):
     date = datetime.date(year, month, day)
     return (date.weekday()+1) % len(SMTWTFS)
 
@@ -14,6 +14,11 @@ def getDateOfNextMonth():
         month = 1
     return year, month
 
+# -----------------------------------------------
+# -----------------------------------------------
+SECRET_KEY = 'a1f97b7b5e0fda68759b3ef515663cc8'
+# -----------------------------------------------
+# -----------------------------------------------
 
 LAST_MONTH = 12
 SMTWTFS = ['日', '月', '火', '水', '木', '金', '土']
