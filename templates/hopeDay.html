@@ -23,7 +23,7 @@
                 <div class="calendarBlock SMTWTFS">{{ iSMTWTFS }}</div>
             {% endif %}
         {% endfor %}
-        
+
         {% for iBlock in range(SUM_BLOCKS_OF_CALENDAR) %}
             {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= SUM_DAYS_OF_TARGET_MONTH+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
                 <div class="calendarBlock"></div>
@@ -35,9 +35,6 @@
                 {% else %}
                     <button class="calendarBlock" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}" onclick="server.switch(this.value)">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
                 {% endif %}
-                <!-- day2
-                rem=4
-                iBlock=5 -->
             {% endif %}
         {% endfor %}
     </form>

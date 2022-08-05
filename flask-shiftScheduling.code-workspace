@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../typing"
+		},
+		{
+			"path": "../env/myblog"
+		}
+	],
+	"settings": {}
+}

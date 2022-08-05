@@ -18,7 +18,7 @@
     </div>
     <form method="POST" class="createWorkTimeSelect">
         <div class="empty"></div>
-        
+
         <div class="startTimeLabel">
             {% for startTime in START_SELECT_LIST %}
                 <label>{{ startTime }}</label>
@@ -30,7 +30,7 @@
                 <label>{{ endTime }}</label>
             {% endfor %}
         </div>
-        
+
         {% for i in range( hopeDayStrList | length ) %}
 
             <div class="dayLabel">{{ hopeDayStrList[i] }}</div>
@@ -38,19 +38,19 @@
             <div class="workTimeRadio">
                 {% for iStart in START_SELECT_LIST %}
                     {% if iStart == START_END_DEFAULT[0] %}
-                        <input type="radio" value={{ iStart }} name={{ workTimeRadioNameList[2*i] }} checked>
+                        <input type="radio" value="{{ iStart }}" name="{{ workTimeRadioNameList[2*i] }}" checked>
                     {% else %}
-                        <input type="radio" value={{ iStart }} name={{ workTimeRadioNameList[2*i] }}>
+                        <input type="radio" value="{{ iStart }}" name="{{ workTimeRadioNameList[2*i] }}">
                     {% endif %}
                 {% endfor %}
             </div>
-                
+
             <div class="workTimeRadio">
                 {% for iEnd in END_SELECT_LIST %}
                     {% if iEnd == START_END_DEFAULT[1] %}
-                        <input type="radio" value={{ iEnd }} name={{ workTimeRadioNameList[2*i+1] }} checked>
+                        <input type="radio" value="{{ iEnd }}" name="{{ workTimeRadioNameList[2*i+1] }}" checked>
                     {% else %}
-                        <input type="radio" value={{ iEnd }} name={{ workTimeRadioNameList[2*i+1] }}>
+                        <input type="radio" value="{{ iEnd }}" name="{{ workTimeRadioNameList[2*i+1] }}">
                     {% endif %}
                 {% endfor %}
             </div>

@@ -9,10 +9,10 @@
 # 変更が反映されるのが一時的（元に戻る）
 # 削除した投稿の編集URL（/2/update）
 # Internal Server Errorになる
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import desc
-from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin
 from flask_bootstrap import Bootstrap
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,11 +27,11 @@ import config
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shift.db'
 app.config['SECRET_KEY'] = os.urandom(24)
+app.permanent_session_lifetime = datetime.timedelta(minutes=3)
 db = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -54,14 +54,17 @@ class HopeTime(db.Model):
     start = db.Column(db.Integer, nullable=False)
     end = db.Column(db.Integer, nullable=False)
 
-
-isHopeDayList = [1]*config.SUM_DAYS_OF_TARGET_MONTH
+# isHopeDayList = [1]*config.SUM_DAYS_OF_TARGET_MONTH
+# session.permanent = True
+# session["isHopeDayList"] = [1]*config.SUM_DAYS_OF_TARGET_MONTH
 
 @jsf.use(app)
 class App:
     def switch(self, day):
         day = int(day)
+        isHopeDayList = session["isHopeDayList"]
         isHopeDayList[day-1] = isHopeDayList[day-1] ^ 1
+        session["isHopeDayList"] = isHopeDayList
         if isHopeDayList[day-1]:
             self.js.document.getElementById(f'selectDay{day}').style.backgroundColor = 'buttonface'
         else:
@@ -86,7 +89,7 @@ def signup():
         password = request.form.get('password')
         if len(userLastName) == 0 or len(userFirstName) == 0 or len(password) == 0:
             return render_template('signup.html', errorList=["入力漏れがあります"])
-        
+
         user = User.query.filter_by(userLastName=userLastName, userFirstName=userFirstName).one_or_none()
         if user is None:
             user = User(userLastName=userLastName
@@ -94,21 +97,21 @@ def signup():
                 ,password=generate_password_hash(password, method='sha256'))
         else:
             return render_template('signup.html', errorList=["既に登録されている名前です", "ログインページからログインしてください"])
-            
+
         db.session.add(user)
         db.session.commit()
         return redirect(f'/login')
-    
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
         return render_template('login.html')
-    
+
     elif request.method == 'POST':
         userLastName = request.form.get('userLastName')
         userFirstName = request.form.get('userFirstName')
         password = request.form.get('password')
-        
+
         user = User.query.filter_by(userLastName=userLastName, userFirstName=userFirstName).one_or_none()
         if user is None or check_password_hash(user.password, password) == False:
             return render_template('login.html', error="氏名またはパスワードが正しくありません")
@@ -142,8 +145,8 @@ def userHome(id):
 @login_required
 def hopeDay(id):
     if request.method == 'GET':
-        global isHopeDayList
-        isHopeDayList = [1]*config.SUM_DAYS_OF_TARGET_MONTH
+        # global isHopeDayList
+        session["isHopeDayList"] = [1]*config.SUM_DAYS_OF_TARGET_MONTH
         return App.render(render_template('hopeDay.html'
             ,id=id
             ,SMTWTFS=config.SMTWTFS
@@ -162,11 +165,13 @@ def hopeTime(id):
     if request.method == 'GET':
         TARGET_YEAR = config.TARGET_YEAR
         TARGET_MONTH = config.TARGET_MONTH
-        
-        global hopeDayList
-        hopeDayList = [iDay+1 for iDay in range(len(isHopeDayList)) if isHopeDayList[iDay] == 1]
-        workTimeRadioNameList = [i+'_'+str(iDay) for iDay in hopeDayList for i in ['start', 'end']]
-        hopeDayStrList = [f'{TARGET_MONTH}/{iDay}({config.SMTWTFS[config.getNumWeekday(TARGET_YEAR, TARGET_MONTH, iDay)]})' for iDay in hopeDayList] # 勤務可能日のリスト 例: 8/2(火)
+
+        isHopeDayList = session["isHopeDayList"]
+        # hopeDayList = session["hopeDayList"]
+        # global hopeDayList
+        session["hopeDayList"] = [iDay+1 for iDay in range(len(isHopeDayList)) if isHopeDayList[iDay] == 1]
+        workTimeRadioNameList = [i+'_'+str(iDay) for iDay in session["hopeDayList"] for i in ['start', 'end']]
+        hopeDayStrList = [f'{TARGET_MONTH}/{iDay}({config.SMTWTFS[config.getNumWeekday(TARGET_YEAR, TARGET_MONTH, iDay)]})' for iDay in session["hopeDayList"]] # 勤務可能日のリスト 例: 8/2(火)
         return render_template('hopeTime.html'
             ,id=id
             ,hopeDayStrList=hopeDayStrList
@@ -175,7 +180,7 @@ def hopeTime(id):
             ,END_SELECT_LIST=config.END_SELECT_LIST
             ,START_END_DEFAULT=config.START_END_DEFAULT
             )
-        
+
     elif request.method == 'POST':
         print('point1')
         created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
@@ -185,13 +190,13 @@ def hopeTime(id):
             ,targetMonth=config.TARGET_MONTH
             )
         db.session.add(hopeDay)
-        
+
         hopeDay = HopeDay.query.filter_by(userId = id
             ,targetYear = config.TARGET_YEAR
             ,targetMonth = config.TARGET_MONTH).order_by(desc(HopeDay.id)).first()
-        
+
         print('point2')
-        for iDay in hopeDayList:
+        for iDay in session["hopeDayList"]:
             start = int(request.form.get(f'start_{iDay}'))
             end = int(request.form.get(f'end_{iDay}'))
             hopeTime = HopeTime(hopeDayId=hopeDay.id
@@ -205,28 +210,28 @@ def hopeTime(id):
         print('point4')
         return redirect(f'/{id}/user/home')
 
-@app.route('/<int:id>/user/update', methods=['GET', 'POST'])
-@login_required
-def update(id):
-    post = Post.query.get(id)
-    if request.method == 'GET':
-        return render_template('update.html', post=post)
-    
-    elif request.method == 'POST':
-        post.title = request.form.get('title')
-        post.body = request.form.get('body')
-        
-        db.session.commit()
-        return redirect(f'/{id}/user/home')
+# @app.route('/<int:id>/user/update', methods=['GET', 'POST'])
+# @login_required
+# def update(id):
+    # post = Post.query.get(id)
+    # if request.method == 'GET':
+    #     return render_template('update.html', post=post)
 
-@app.route('/<int:id>/user/delete', methods=['GET'])
-@login_required
-def delete(id):
-    post = Post.query.get(id)
-    
-    db.session.delete(post)
-    db.session.commit()
-    return redirect(f'/{id}/user/home')
+    # elif request.method == 'POST':
+    #     post.title = request.form.get('title')
+    #     post.body = request.form.get('body')
+
+    #     db.session.commit()
+    #     return redirect(f'/{id}/user/home')
+
+# @app.route('/<int:id>/user/delete', methods=['GET'])
+# @login_required
+# def delete(id):
+#     post = Post.query.get(id)
+
+#     db.session.delete(post)
+#     db.session.commit()
+#     return redirect(f'/{id}/user/home')
 
 @app.route('/logout')
 @login_required

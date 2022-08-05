@@ -18,9 +18,6 @@
         <p>{{ error }}</p>    
     {% else %}
         <p>作成日時： {{ hopeDay.created_at }}</p>
-        <p>提出者： {{ hopeDay.isMySubmission }}</p>
-        <a href="/{{ hopeDay.id }}/update" role="button" class="btn btn-primary">編集して再提出</a>
-        <a href="/{{ hopeDay.id }}/delete" role="button" class="btn btn-primary">提出を取り消す</a>
     {% endif %}
 </div>
 {% endblock %}
