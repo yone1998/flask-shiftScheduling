@@ -8,18 +8,23 @@
 
 {% block body %}
 <div class="userHome">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <br>
-    <a href="/{{ userID }}/user/create/hopeDay" role="button">希望シフトを作成して提出</a>
-    <br>
-    <a href="/logout" role="button">ログアウト</a>
-    <hr>
-    <h4>{{ HOPE_SHIFT_STR }}</h4>
-    {% if messageList %}
-        {% for iMessage in messageList %}
-            <p>{{ iMessage }}</p>
-        {% endfor %}
-    {% else %}
+    {% if hopeDay %}
+        <h4>{{ HOPE_SHIFT_STR }}</h4>
         <p>作成日時： {{ hopeDay.created_at }}</p>
+        <a href="/{{ userID }}/user/hopeShift" role="button">編集して再提出する</a>
+    {% else %}
+        <a href="/{{ userID }}/user/hopeShift" role="button">希望シフトを作成して提出</a>
+        <p>再提出も可能です</p>
     {% endif %}
+    <hr>
+    <a href="/logout" role="button">ログアウト</a>
 </div>
 {% endblock %}

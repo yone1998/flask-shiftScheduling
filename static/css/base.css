@@ -5,3 +5,15 @@ body {
     /* min-height: 100vh;
     display: grid; */
 }
+.ok {
+    font-size: 18px;
+    background-color: skyblue;
+    color: blue;
+    border-radius: 4px;
+}
+.ng {
+    font-size: 18px;
+    background-color: pink;
+    color: red;
+    border-radius: 4px;
+}
