@@ -18,14 +18,21 @@
         {% endif %}
     {% endwith %}
     <form method="POST">
-        <label class="form-label">姓</label>
-        <input type="text" name="userLastName" placeholder="山田" class="form-control">
-        <label class="form-label">名</label>
-        <input type="text" name="userFirstName" placeholder="太郎" class="form-control">
-        <label class="form-label">ユーザーID（半角英数字のみ・20文字以内）</label>
+        <label class="form-label">氏名（シフト表に記載されます）</label>
+        <input type="text" name="name" placeholder="例）佐藤" class="form-control">
+        <label class="form-label">ユーザーID（半角英数字のみ・20文字以内・非公開情報）</label>
         <input type="text" name="loginID" class="form-control">
+        <br>
         <label class="form-label">パスワード（半角英数字のみ・20文字以内）</label>
         <input type="password" name="password" class="form-control">
+        <label class="form-label">パスワード（確認用）</label>
+        <input type="password" name="passwordCheck" class="form-control">
+        <br>
+        <p>▼ 選択してください</p>
+        <label><input type="radio" value="1" name="isFullTime"> {{ PART_FULL_JA_LIST[1] }}</label>
+        <br>
+        <label><input type="radio" value="0" name="isFullTime"> {{ PART_FULL_JA_LIST[0] }}</label>
+        <br>
         <br>
         <input type="submit" value="送信" class="btn btn-primary">
     </form>

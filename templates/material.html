@@ -1,29 +1,17 @@
-<div class="explain">休みを希望する日のブロックをクリックして赤くしてください</div>
-    <br>
-    <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
-    <div class="createWorkDaySelect">
-        <!-- 日 月 火 水 木 金 土 -->
-        {% for iSMTWTFS in SMTWTFS %}
-            {% if iSMTWTFS == '日' %}
-                <div class="calendarBlock SMTWTFS Sunday">{{ iSMTWTFS }}</div>
-            {% elif iSMTWTFS == '土' %}
-                <div class="calendarBlock SMTWTFS Saturday">{{ iSMTWTFS }}</div>
-            {% else %}
-                <div class="calendarBlock SMTWTFS">{{ iSMTWTFS }}</div>
-            {% endif %}
-        {% endfor %}
-
-        {% for iBlock in range(SUM_BLOCKS_OF_CALENDAR) %}
-            {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= SUM_DAYS_OF_TARGET_MONTH+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
-                <div class="calendarBlock"></div>
-            {% else %}
-                {% if iBlock % (SMTWTFS | length) == 0 %}
-                    <button class="calendarBlock Sunday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
-                {% elif iBlock % (SMTWTFS | length) == 6 %}
-                    <button class="calendarBlock Saturday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
-                {% else %}
-                    <button v-on:click="switchHopeDay" class="calendarBlock" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" value="{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-    </div>
+hopeDayList = []
+        if part_full == config.PART_FULL_ENG_LIST[0]:
+            print('check1')
+            startList = []
+            endList = []
+            for iDay in range(config.SUM_DAYS_OF_TARGET_MONTH):
+                if request.form.get(f'hopeDayCheckBox_{iDay+1}'):
+                    startList.append(int(request.form.get(f'start_{iDay+1}')))
+                    endList.append(int(request.form.get(f'end_{iDay+1}')))
+        elif part_full == config.PART_FULL_ENG_LIST[1]:
+            for iDay in range(config.SUM_DAYS_OF_TARGET_MONTH):
+                print(request.form.get(f'isHopeDay{iDay+1}'))
+                if request.form.get(f'isHopeDay{iDay+1}'):
+                    hopeDayList.append(iDay+1)
+            startList = [config.FULL_TIME_LIST[0]]*len(hopeDayList)
+            endList = [config.FULL_TIME_LIST[1]]*len(hopeDayList)
+        print(hopeDayList)

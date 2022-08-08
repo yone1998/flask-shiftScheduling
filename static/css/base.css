@@ -1,19 +1,20 @@
 body {
     font-size: 2rem;
     margin: 0 auto;
-    width: 350px;
+    width: 375px;
     /* min-height: 100vh;
     display: grid; */
+}
+h3 {
+    font-weight: bold;
 }
 .ok {
     font-size: 18px;
     background-color: skyblue;
-    color: blue;
     border-radius: 4px;
 }
 .ng {
     font-size: 18px;
     background-color: pink;
-    color: red;
     border-radius: 4px;
 }

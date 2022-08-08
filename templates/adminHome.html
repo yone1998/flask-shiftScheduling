@@ -1,0 +1,57 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}HOME{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/adminHome.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="adminHome">
+    <h3>管理者HOME</h3>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+            <hr>
+        {% endif %}
+    {% endwith %}
+    <h4>ユーザー情報</h4>
+    <hr>
+    {% if userArr %}
+        {% for user in userArr %}
+            <p>{{ PART_FULL_JA_LIST[user.isFullTime] }}</p>
+            <p>ID: {{user.id}}</p>
+            <p>氏名: {{ user.name }}</p>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>ユーザーの登録がありません</p>
+        <hr>
+    {% endif %}
+    <h4>{{ HOPE_SHIFT_ADMIN_STR }}</h4>
+    <hr>
+    {% if hopeDayArr %}
+        {% for hopeDay in hopeDayArr %}
+            <p>ID: {{ hopeDay.userID }}</p>
+            <p>作成日時: {{ hopeDay.created_at }}</p>
+            <p>最終編集者: {{ LAST_EDIT_LIST[hopeDay.isUserSubmission] }}</p>
+            <hr>
+        {% endfor %}
+    {% else %}
+        <p>まだ希望シフトの提出がありません</p>
+        <hr>
+    {% endif %}
+    <!-- {% if hopeDay %}
+        <h4>{{ HOPE_SHIFT_STR }}</h4>
+        <p>作成日時: {{ hopeDay.created_at }}</p>
+        <a href="/{{ adminID }}/edit/hopeShift" role="button">編集する</a>
+    {% else %}
+        <a href="/{{ adminID }}/admin/hopeShift" role="button">希望シフトを作成して提出</a>
+        <p>再提出も可能です</p>
+    {% endif %} -->
+    <a href="/logout" role="button">ログアウト</a>
+</div>
+{% endblock %}

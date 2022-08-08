@@ -1,0 +1,80 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}希望シフト作成{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/hopeShiftFullTime.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h3>希望休の選択</h3>
+    <div class="explain">休みを希望する日のブロックをクリックして赤くしてください</div>
+    <div class="explain">社員の勤務時間帯は{{ FULL_TIME_LIST[0] }}-{{ FULL_TIME_LIST[1] }}時で固定となっています</div>
+    <br>
+    <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
+    <form method="POST" class="calender">
+        <div class="createWorkDaySelect">
+            <!-- 日 月 火 水 木 金 土 -->
+            {% for iSMTWTFS in SMTWTFS %}
+                {% if iSMTWTFS == '日' %}
+                    <div class="calendarBlock SMTWTFS Sunday">{{ iSMTWTFS }}</div>
+                {% elif iSMTWTFS == '土' %}
+                    <div class="calendarBlock SMTWTFS Saturday">{{ iSMTWTFS }}</div>
+                {% else %}
+                    <div class="calendarBlock SMTWTFS">{{ iSMTWTFS }}</div>
+                {% endif %}
+            {% endfor %}
+            {% for iBlock in range(SUM_BLOCKS_OF_CALENDAR) %}
+                <!-- 先月または来月のときは空白 -->
+                {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= SUM_DAYS_OF_TARGET_MONTH+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
+                    <div class="calendarBlock"></div>
+                <!-- 今月のとき -->
+                {% else %}
+                    {% if iBlock % (SMTWTFS | length) == 0 %}
+                        <label @click="switchHopeDay" class="calendarBlock Sunday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
+                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        </label>
+                    {% elif iBlock % (SMTWTFS | length) == 6 %}
+                        <label @click="switchHopeDay" class="calendarBlock Saturday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
+                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        </label>
+                    {% else %}
+                        <label @click="switchHopeDay" class="calendarBlock" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
+                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        </label>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        </div>
+        <br>
+        <br>
+        <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
+        <input type="submit" value="提出" class="btn btn-primary">
+    </form>
+    <br>
+    <p>希望シフトの提出には少し時間がかかります</p>
+    <br>
+</div>
+<script>
+    new Vue({
+        el:".createWorkDaySelect",
+        data:{
+        },
+        methods:{
+            switchHopeDay:function(event){
+                const targetDay = event.target
+                if (targetDay.style.backgroundColor != 'pink'){
+                    targetDay.style.backgroundColor = 'pink'
+
+                } else {
+                    targetDay.style.backgroundColor = 'rgb(245, 245, 245)'
+
+                }
+            }
+        },
+        delimiters: ['[[', ']]']
+    })
+</script>
+{% endblock %}
