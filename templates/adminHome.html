@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block body %}
-<div class="adminHome">
+<div class="container">
     <h3>管理者HOME</h3>
     <hr>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -18,40 +18,45 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <h4>ユーザー情報</h4>
-    <hr>
-    {% if userArr %}
-        {% for user in userArr %}
-            <p>{{ PART_FULL_JA_LIST[user.isFullTime] }}</p>
-            <p>ID: {{user.id}}</p>
-            <p>氏名: {{ user.name }}</p>
-            <hr>
-        {% endfor %}
-    {% else %}
-        <p>ユーザーの登録がありません</p>
-        <hr>
-    {% endif %}
-    <h4>{{ HOPE_SHIFT_ADMIN_STR }}</h4>
-    <hr>
+    <h4>希望シフト{{ TARGET_DATE_STR }}の提出状況</h4>
     {% if hopeDayArr %}
-        {% for hopeDay in hopeDayArr %}
-            <p>ID: {{ hopeDay.userID }}</p>
-            <p>作成日時: {{ hopeDay.created_at }}</p>
-            <p>最終編集者: {{ LAST_EDIT_LIST[hopeDay.isUserSubmission] }}</p>
-            <hr>
-        {% endfor %}
+        <section class="submitTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">作成日時</span>
+            <span class="tabelSpan headLabel">最終編集者</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for hopeDay in hopeDayArr %}
+                <span class="tabelSpan">{{ hopeDay.userID }}</span>
+                <span class="tabelSpan">{{ hopeDay.created_at }}</span>
+                <span class="tabelSpan">{{ LAST_EDIT_LIST[hopeDay.isUserSubmission] }}</span>
+                <a class="tabelSpan" href="/{{ hopeDay.userID }}/user/create/{{ PART_FULL_ENG_LIST[user.isFullTime] }}/hopeShift" role="button">編集</a>
+            {% endfor %}
+        </section>
     {% else %}
         <p>まだ希望シフトの提出がありません</p>
-        <hr>
     {% endif %}
-    <!-- {% if hopeDay %}
-        <h4>{{ HOPE_SHIFT_STR }}</h4>
-        <p>作成日時: {{ hopeDay.created_at }}</p>
-        <a href="/{{ adminID }}/edit/hopeShift" role="button">編集する</a>
+    <hr>
+    <h4>ユーザー情報</h4>
+    {% if userArr %}
+        <section class="userTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">区分</span>
+            <span class="tabelSpan headLabel">レベル</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for user in userArr %}
+                <span class="tabelSpan">{{ user.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.isFullTime] }}</span>
+                <span class="tabelSpan">{{ user.level }}</span>
+                <a class="tabelSpan" href="/{{ adminID }}/delete/userTable/{{ user.id }}" role="button">削除</a>
+            {% endfor %}
+        </section>
+        <br>
+        <p><a href="/{{ adminID }}/admin/changeLevel" role="button">レベル変更（パート・アルバイト）</a><br>
+        パート・アルバイトから社員への変更は、社員として新規登録し直してください</p>
     {% else %}
-        <a href="/{{ adminID }}/admin/hopeShift" role="button">希望シフトを作成して提出</a>
-        <p>再提出も可能です</p>
-    {% endif %} -->
+        <p>ユーザーの登録がありません</p>
+    {% endif %}
+    <hr>
     <a href="/logout" role="button">ログアウト</a>
 </div>
 {% endblock %}

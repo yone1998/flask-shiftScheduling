@@ -12,34 +12,34 @@
     <header>
         <nav>
             <h3>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h3>
-            <p class="explain">休みを希望する日のチェックを外してください<br>
-            勤務可能時間帯を選択してください</p>
-            <section class="workTimeSelect1">
+            <div class="explain">休みを希望する日のチェックを外してください</div>
+            <div class="explain">勤務可能時間帯を選択してください</div>
+            <div class="workTimeSelect1">
                 <div for="empty"></div>
                 <div for="empty"></div>
-                <span class="startEndLabel workTimeSection">勤務開始時間</span>
-                <span class="startEndLabel workTimeSection">勤務終了時間</span>
+                <div class="startEndLabel">勤務開始時間</div>
+                <div class="startEndLabel">勤務終了時間</div>
 
-                <span class="hopeDayLabel">勤務可能</span>
-                <div for="empty"></div>
-                <section class="startTimeLabel workTimeLabel workTimeSection">
+                <div class="hopeDayLabel">勤務可能</div>
+                <div class="monthLabel">{{ TARGET_MONTH }}月</div>
+                <div class="startTimeLabel">
                 {% for startTime in START_SELECT_LIST %}
                     <label>{{ startTime }}</label>
                 {% endfor %}
-                </section>
-                <section class="endTimeLabel workTimeLabel workTimeSection">
+                </div>
+                <div class="endTimeLabel">
                 {% for endTime in END_SELECT_LIST %}
                     <label>{{ endTime }}</label>
                 {% endfor %}
-                </section>
-            </section>
+                </div>
+            </div>
         </nav>
     </header>
     <form method="POST" class="workTimeSelect2">
         {% for iDay in range( DAY_STR_LIST | length ) %}
-            <input class="hopeDayCheckBox" v-on:click="switchHopeHoliday" type="checkbox" id="{{ HOPE_DAY_CHECK_BOX_NAME_LIST[iDay] }}" name="{{ HOPE_DAY_CHECK_BOX_NAME_LIST[iDay] }}" checked="checked">
-            <label class="dayLabel" id="{{ DAY_LABEL_ID_LIST[iDay] }}" for="{{ HOPE_DAY_CHECK_BOX_NAME_LIST[iDay] }}">{{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}</label>
-            <section class="startTimeLabel workTimeRadio workTimeSection">
+            <input v-on:click="switchHopeHoliday" type="checkbox" name="{{ HOPE_DAY_CHECK_BOX_NAME_LIST[iDay] }}" checked="checked">
+            <div id="{{ DAY_LABEL_ID_LIST[iDay] }}" class="dayLabel">{{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}</div>
+            <div class="workTimeRadio">
             {% for iStart in START_SELECT_LIST %}
                 {% if iStart == START_END_DEFAULT[0] %}
                 <input type="radio" value="{{ iStart }}" name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay] }}" checked="checked">
@@ -47,8 +47,8 @@
                 <input type="radio" value="{{ iStart }}" name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay] }}">
                 {% endif %}
             {% endfor %}
-            </section>
-            <section class="endTimeLabel workTimeRadio workTimeSection">
+            </div>
+            <div class="workTimeRadio">
             {% for iEnd in END_SELECT_LIST %}
                 {% if iEnd == START_END_DEFAULT[1] %}
                 <input type="radio" value="{{ iEnd }}" name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay+1] }}" checked="checked">
@@ -56,14 +56,14 @@
                 <input type="radio" value="{{ iEnd }}" name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay+1] }}">
                 {% endif %}
             {% endfor %}
-            </section>
+            </div>
         {% endfor %}
         <br>
         <br>
         <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
         <input type="submit" value="提出" class="btn btn-primary">
     </form>
-    <p>データの送信に少し時間がかかることがあります</p>
+    <p>データの送信に少し時間がかかることもあります</p>
     <br>
 </div>
 <script>

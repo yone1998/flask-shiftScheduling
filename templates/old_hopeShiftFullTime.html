@@ -9,10 +9,9 @@
 
 {% block body %}
 <div class="container">
-    <h3>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h3>
-    <h4>希望休の選択</h4>
-    <p>休みを希望する日のブロックをクリックして赤くしてください</p>
-    <p>社員の勤務時間帯は{{ FULL_TIME_LIST[0] }}-{{ FULL_TIME_LIST[1] }}時で固定となっています</p>
+    <h3>希望休の選択</h3>
+    <div class="explain">休みを希望する日のブロックをクリックして赤くしてください</div>
+    <div class="explain">社員の勤務時間帯は{{ FULL_TIME_LIST[0] }}-{{ FULL_TIME_LIST[1] }}時で固定となっています</div>
     <br>
     <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
     <form method="POST" class="calender">
@@ -34,32 +33,22 @@
                 <!-- 今月のとき -->
                 {% else %}
                     {% if iBlock % (SMTWTFS | length) == 0 %}
-                        <label @click="switchHopeDay" class="calendarBlock Sunday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
-                        </label>
+                        <button @click="switchHopeDay" class="calendarBlock Sunday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" v-bind:value="True">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
                     {% elif iBlock % (SMTWTFS | length) == 6 %}
-                        <label @click="switchHopeDay" class="calendarBlock Saturday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
-                        </label>
+                        <button @click="switchHopeDay" class="calendarBlock Saturday" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" v-bind:value="True">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
                     {% else %}
-                        <label @click="switchHopeDay" class="calendarBlock" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
-                        </label>
+                        <button @click="switchHopeDay" class="calendarBlock" type="button" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}" v-bind:value="True">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}</button>
                     {% endif %}
                 {% endif %}
             {% endfor %}
         </div>
         <br>
         <br>
-        {% if isAdmin %}
-            <a href="/{{ userID }}/admin/home" role="button" class="btn btn-primary">キャンセル</a>
-        {% else %}
-            <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
-        {% endif %}
+        <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
         <input type="submit" value="提出" class="btn btn-primary">
     </form>
     <br>
-    <p>データの送信に少し時間がかかることがあります</p>
+    <p>希望シフトの提出には少し時間がかかります</p>
     <br>
 </div>
 <script>
@@ -72,10 +61,10 @@
                 const targetDay = event.target
                 if (targetDay.style.backgroundColor != 'pink'){
                     targetDay.style.backgroundColor = 'pink'
-
+                    targetDay.value = "False"
                 } else {
-                    targetDay.style.backgroundColor = 'rgb(245, 245, 245)'
-
+                    targetDay.style.backgroundColor = 'buttonface'
+                    targetDay.value = "True"
                 }
             }
         },

@@ -1,11 +1,46 @@
+## 問題
 # ・保守後にデータベース内の登録をクリアにした際
 # ユーザーのPCに保守前のセッション情報が残っていたらまずい
-# ・update
-# 変更が反映されるのが一時的（元に戻る）
-# 削除した投稿の編集URL（/2/update）
-# Internal Server Errorになる
+
 # ・css
 # メッセージのスタイルが反映されない
+# レスポンシブ対応
+# base.cssが反映されない
+# BEMがわからん
+
+# ・csrf
+
+## タスク
+# ・フォーム判定
+# Vueに任せて、バックエンドの条件分岐を減らしたい（可読性のため）
+
+# ・CSS
+# メッセージをおしゃれにする
+
+# ・データベースの整合性を保つ
+# HopeDay.idとHopeTime.hopeDayIDで片方しかないIDがあった場合は削除する
+
+# ・管理者機能
+# 1. 祝日設定（この後に希望調査）
+# 来月の設定のみ、変更した場合は来月の希望シフトを削除する（整合性をとるため）
+# 2. 最適化システム
+# パラメータのチューニングどうする？
+# 3. 人の手による微調整
+# PCのみ対応（スマホ非対応）
+# レベル変更（適宜）
+# 勤務時間帯条件設定（適宜）
+
+# ・ユーザー機能
+# 個人: 「今月のシフト」「来月の希望シフトまたは決定シフト」
+# 全体: 今月と来月のシフトを表示
+
+# ・設計書作成
+# ・サブスク機能
+
+# ・疑問
+# メンテナンスにおけるデータベースの整合性はどうやって保証する
+# エクセルにして吐き出す機能も必要？
+# テストのやり方
 
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
@@ -18,9 +53,7 @@ from flask_admin.contrib.sqla import ModelView
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import jyserver.Flask as jsf
-
-import os, datetime, pytz
+import datetime, pytz
 
 import config
 
@@ -39,6 +72,7 @@ class User(UserMixin, db.Model):
     loginID    = db.Column(db.String(20), nullable=False, unique=True)
     password   = db.Column(db.String(20), nullable=False)
     isFullTime = db.Column(db.Boolean, nullable=False)
+    level      = db.Column(db.Integer, nullable=False)
 
 class HopeDay(db.Model):
     id               = db.Column(db.Integer, primary_key=True)
@@ -72,11 +106,12 @@ if not app.secret_key:
     raise ValueError("No SECRET_KEY set for Flask application")
 app.permanent_session_lifetime = datetime.timedelta(minutes=10)
 
-def isMatchLoggedID(ID):
-    if ID != session.get("loggedID"):
-        session.clear()
-        return False
-    return True
+# 引数の数が異なる
+def isPermittedID(ID, target):
+    if target == 'user':
+        return ID == session.get("loggedID")
+    elif target == 'admin':
+        return session.get("loggedID") in config.ADMIN_ID_LIST
 
 def isMatchIsFullTime(userID, part_full):
     user = User.query.filter_by(id=userID).one_or_none()
@@ -133,12 +168,18 @@ def signup():
 
         user = User.query.filter_by(loginID=loginID).one_or_none()
         if user is None:
+            if int(isFullTime) == 1:
+                level = config.FULL_LEVEL
+            elif int(isFullTime) == 0:
+                level = config.PART_DEFAULT_LEVEL
+
             # Userテーブルに新規登録
             user = User(
                 name=name
                 ,loginID=loginID
                 ,password=generate_password_hash(password, method='sha256')
                 ,isFullTime=bool(int(isFullTime))
+                ,level=level
                 )
             db.session.add(user)
             db.session.commit()
@@ -216,15 +257,16 @@ def adminLogin():
 
 @app.route('/<int:userID>/user/home', methods=['GET', 'POST'])
 def userHome(userID):
-    if not isMatchLoggedID(userID):
+    if not isPermittedID(userID, 'user'):
+        session.clear()
         return redirect(url_for('userLogin'))
 
     if request.method == 'GET':
         user = User.query.filter_by(id = userID).one()
         hopeDay = HopeDay.query.filter_by(
             userID = userID
-            ,targetYear = config.TARGET_YEAR
-            ,targetMonth = config.TARGET_MONTH
+            ,targetYear = config.TARGET_YEAR_MONTH[0]
+            ,targetMonth = config.TARGET_YEAR_MONTH[1]
             ).one_or_none()
         print(hopeDay)
 
@@ -232,7 +274,7 @@ def userHome(userID):
             flash('提出済みの希望シフトはありません', 'ng')
             return render_template('userHome.html'
                 ,user = user
-                ,HOPE_SHIFT_USER_STR=config.HOPE_SHIFT_USER_STR
+                ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                 ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                 )
@@ -241,7 +283,7 @@ def userHome(userID):
             if hopeTime is not None:
                 return render_template('userHome.html'
                     ,user=user
-                    ,HOPE_SHIFT_USER_STR=config.HOPE_SHIFT_USER_STR
+                    ,TARGET_DATE_STR=config.TARGET_DATE_STR
                     ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                     ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                     ,hopeDay=hopeDay
@@ -256,7 +298,8 @@ def userHome(userID):
 
 @app.route('/<int:adminID>/admin/home', methods=['GET', 'POST'])
 def adminHome(adminID):
-    if not isMatchLoggedID(adminID):
+    if not isPermittedID(adminID, 'user'):
+        session.clear()
         return redirect(url_for('adminLogin'))
 
     if request.method == 'GET':
@@ -269,13 +312,13 @@ def adminHome(adminID):
         if userArr is None:
             return render_template('adminHome.html'
                 ,adminID=adminID
-                ,HOPE_SHIFT_ADMIN_STR=config.HOPE_SHIFT_ADMIN_STR
+                ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 )
         elif hopeDayArr is None or hopeTimeArr is None:
             return render_template('adminHome.html'
                 ,adminID=adminID
                 ,userArr=userArr
-                ,HOPE_SHIFT_ADMIN_STR=config.HOPE_SHIFT_ADMIN_STR
+                ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                 )
         else:
@@ -285,33 +328,26 @@ def adminHome(adminID):
                 ,hopeDayArr=hopeDayArr
                 ,hopeTimeArr=hopeTimeArr
                 ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
-                ,HOPE_SHIFT_ADMIN_STR=config.HOPE_SHIFT_ADMIN_STR
+                ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
+                ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                 )
-
-# @app.route('/<int:userID>/user/create', methods=['GET'])
-# def create(userID):
-#     if not isMatchLoggedID(userID):
-#         return redirect(url_for('userLogin'))
-
-#     if request.method == 'GET':
-#         return redirect('hopeShift'
-#                         ,userID=userID
-#                         ,part_full=config.PART_FULL_ENG_LIST[isFullTime])
-
 
 @app.route('/<int:userID>/user/create/<string:part_full>/hopeShift', methods=['GET', 'POST'])
 def hopeShift(userID, part_full):
-    if not isMatchLoggedID(userID):
-        return redirect(url_for('userLogin'))
-
-    if not isMatchIsFullTime(userID, part_full):
-        return redirect(url_for('userLogin'))
+    if isPermittedID(userID, 'admin'):
+        isAdmin = True
+    else:
+        isAdmin = False
+        if not isPermittedID(userID, 'user') or not isMatchIsFullTime(userID, part_full):
+            session.clear()
+            return redirect(url_for('userLogin'))
 
     if request.method == 'GET':
         if part_full == config.PART_FULL_ENG_LIST[0]:
             return render_template('hopeShiftPartTime.html'
                 ,userID=userID
+                ,isAdmin=isAdmin
                 ,SMTWTFS=config.SMTWTFS
                 ,DAY_STR_LIST=config.DAY_STR_LIST
                 ,WORK_TIME_RADIO_NAME_LIST=config.WORK_TIME_RADIO_NAME_LIST
@@ -320,17 +356,20 @@ def hopeShift(userID, part_full):
                 ,START_SELECT_LIST=config.START_SELECT_LIST
                 ,END_SELECT_LIST=config.END_SELECT_LIST
                 ,START_END_DEFAULT=config.START_END_DEFAULT
+                ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH
                 )
 
         elif part_full == config.PART_FULL_ENG_LIST[1]:
             return render_template('hopeShiftFullTime.html'
                 ,userID=userID
+                ,isAdmin=isAdmin
                 ,SMTWTFS=config.SMTWTFS
                 ,NUM_FIRST_WEEKDAY_OF_TARGET_MONTH=config.NUM_FIRST_WEEKDAY_OF_TARGET_MONTH
                 ,SUM_DAYS_OF_TARGET_MONTH=config.SUM_DAYS_OF_TARGET_MONTH
                 ,SUM_BLOCKS_OF_CALENDAR=config.SUM_BLOCKS_OF_CALENDAR
                 ,SELECT_DAYS_LIST=config.SELECT_DAYS_LIST
                 ,FULL_TIME_LIST=config.FULL_TIME_LIST
+                ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH
                 )
 
     elif request.method == 'POST':
@@ -356,8 +395,8 @@ def hopeShift(userID, part_full):
         # 前回のレコードの削除
         deleteHopeDay = HopeDay.query.filter_by(
             userID=userID
-            ,targetYear = config.TARGET_YEAR
-            ,targetMonth = config.TARGET_MONTH
+            ,targetYear = config.TARGET_YEAR_MONTH[0]
+            ,targetMonth = config.TARGET_YEAR_MONTH[1]
             ).one_or_none()
         if deleteHopeDay:
             deleteHopeDayID = deleteHopeDay.id
@@ -368,10 +407,10 @@ def hopeShift(userID, part_full):
         created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
         addHopeDay = HopeDay(
             userID=userID
-            ,targetYear=config.TARGET_YEAR
-            ,targetMonth=config.TARGET_MONTH
+            ,targetYear=config.TARGET_YEAR_MONTH[0]
+            ,targetMonth=config.TARGET_YEAR_MONTH[1]
             ,created_at=created_at
-            ,isUserSubmission=True
+            ,isUserSubmission=isAdmin^1
             )
         db.session.add(addHopeDay)
         db.session.commit()
@@ -379,8 +418,8 @@ def hopeShift(userID, part_full):
 
         hopeDay = HopeDay.query.filter_by(
             userID = userID
-            ,targetYear = config.TARGET_YEAR
-            ,targetMonth = config.TARGET_MONTH
+            ,targetYear = config.TARGET_YEAR_MONTH[0]
+            ,targetMonth = config.TARGET_YEAR_MONTH[1]
             ).one_or_none()
         print(hopeDay, 'one_or_none')
 
@@ -398,8 +437,8 @@ def hopeShift(userID, part_full):
         # 今回のレコードの追加
         hopeDay = HopeDay.query.filter_by(
             userID=userID
-            ,targetYear = config.TARGET_YEAR
-            ,targetMonth = config.TARGET_MONTH
+            ,targetYear = config.TARGET_YEAR_MONTH[0]
+            ,targetMonth = config.TARGET_YEAR_MONTH[1]
             ).one()
         print(hopeDay, 'first')
         for iDay in range(len(hopeDayList)):
@@ -414,8 +453,19 @@ def hopeShift(userID, part_full):
             print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeTime')
         print('hopeShiftFinish')
 
-        flash('シフト希望の提出が完了しました', 'ok')
-        return redirect(url_for('userHome', userID=userID))
+        if isAdmin:
+            flash('希望シフトの変更が完了しました', 'ok')
+            return redirect(url_for('adminHome', adminID=session.get("loggedID")))
+        else:
+            flash('希望シフトの提出が完了しました', 'ok')
+            return redirect(url_for('userHome', userID=userID))
+
+@app.route('/<int:adminID>/edit/userTable/<int:userID>', methods=['GET', 'POST'])
+def editUserTable(adminID):
+    if request.method == 'GET':
+        return render_template('editUserTable.html')
+    elif request.method == 'POST':
+        return redirect(url_for('adminHome'), adminID=adminID)
 
 @app.route('/logout')
 def logout():

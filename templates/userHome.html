@@ -18,11 +18,12 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <p>{{ user.name }} さん</p>
+    <h4>ユーザー情報</h4>
     <p>{{ PART_FULL_JA_LIST[user.isFullTime] }}</p>
+    <p>{{ user.name }} さん</p>
     <hr>
     {% if hopeDay %}
-        <h4>{{ HOPE_SHIFT_USER_STR }}</h4>
+        <h4>提出済みの希望シフト{{ TARGET_DATE_STR }}</h4>
         <p>作成日時: {{ hopeDay.created_at }}</p>
         <p>最終編集者: {{ LAST_EDIT_LIST[hopeDay.isUserSubmission] }}</p>
         <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.isFullTime] }}/hopeShift" role="button">再提出する</a>
