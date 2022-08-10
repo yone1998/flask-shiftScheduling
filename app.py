@@ -44,8 +44,7 @@
 
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
-from flask_login import UserMixin
+# from flask_login import UserMixin
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -53,7 +52,7 @@ from flask_admin.contrib.sqla import ModelView
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import datetime, pytz
+import datetime, pytz, os
 
 import config
 
@@ -66,7 +65,8 @@ db        = SQLAlchemy(app)
 bootstrap = Bootstrap(app)
 admin     = Admin(app)
 
-class User(UserMixin, db.Model):
+class User(db.Model):
+    __tabelname__ = 'user'
     id         = db.Column(db.Integer, primary_key=True)
     name       = db.Column(db.String(10), nullable=False)
     loginID    = db.Column(db.String(20), nullable=False, unique=True)
@@ -74,9 +74,13 @@ class User(UserMixin, db.Model):
     isFullTime = db.Column(db.Boolean, nullable=False)
     level      = db.Column(db.Integer, nullable=False)
 
+    hopeDay    = db.relationship('HopeDay', backref='user', lazy=True)
+
 class HopeDay(db.Model):
+    __tabelname__ = 'hopeDay'
     id               = db.Column(db.Integer, primary_key=True)
-    userID           = db.Column(db.Integer, nullable=False)
+    # userID           = db.Column(db.Integer, nullable=False)
+    userID          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     targetYear       = db.Column(db.Integer, nullable=False)
     targetMonth      = db.Column(db.Integer, nullable=False)
     created_at       = db.Column(db.String(30), nullable=False)
@@ -157,14 +161,18 @@ def signup():
         password  = request.form.get('password')
         passwordCheck  = request.form.get('passwordCheck')
         isFullTime  = request.form.get('isFullTime')
+        print('name')
+        print(name)
+        print('loginID')
+        print(loginID)
 
-        if name is None or loginID is None or password is None or passwordCheck is None or isFullTime is None:
+        if len(name) == 0 or len(loginID) == 0 or len(password) == 0 or len(passwordCheck) == 0 or len(isFullTime) == 0:
             flash('入力もれがあります', 'ng')
-            return render_template('signup.html')
+            return render_template('signup.html', PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
 
         if passwordCheck != password:
             flash('パスワードが一致していません', 'ng')
-            return render_template('signup.html')
+            return render_template('signup.html', PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
 
         user = User.query.filter_by(loginID=loginID).one_or_none()
         if user is None:
@@ -195,7 +203,7 @@ def signup():
         else:
             flash('既に使われているユーザーIDです', 'ng')
             flash('登録済みの場合は、ログインページからログインしてください', 'ng')
-            return render_template('signup.html')
+            return render_template('signup.html', PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
 
 @app.route('/userLogin', methods=['GET', 'POST'])
 def userLogin():
@@ -207,6 +215,9 @@ def userLogin():
     elif request.method == 'POST':
         loginID = request.form.get('loginID')
         password = request.form.get('password')
+        print('password')
+        print(len(password) == 0)
+
         if len(loginID) == 0 or len(password) == 0:
             isOK = False
             flash('入力もれがあります', 'ng')
@@ -245,7 +256,6 @@ def adminLogin():
                 session.permanent = True
                 adminID = 0
                 session["loggedID"] = adminID
-                flash('認証が完了しました', 'ok')
             else:
                 isOK = False
                 flash('認証コードが間違っています', 'ng')
@@ -303,18 +313,32 @@ def adminHome(adminID):
         return redirect(url_for('adminLogin'))
 
     if request.method == 'GET':
-        userArr     = User.query.order_by(User.isFullTime.desc(), User.id).all()
-        hopeDayArr  = HopeDay.query.order_by(HopeDay.userID).all()
-        hopeTimeArr = HopeTime.query.order_by(HopeTime.hopeDayID).all()
-        print(userArr)
-        print(hopeDayArr)
+        userArr  = User.query.order_by(User.isFullTime.desc(), User.id).all()
+        submitArr = db.session.query(User.name, User.isFullTime, HopeDay.created_at, HopeDay.isUserSubmission, HopeDay.userID)\
+            .filter(HopeDay.targetYear == config.TARGET_YEAR_MONTH[0]
+            ,HopeDay.targetMonth == config.TARGET_YEAR_MONTH[1])\
+            .order_by(User.isFullTime.desc(), User.id)\
+            .join(User, HopeDay.userID == User.id).all()
+        # hopeTimeArr = HopeTime.query.all()
+        # userArr     = User.query.order_by(User.isFullTime.desc(), User.id).all()
+        # hopeDayArr  = HopeDay.query.order_by(HopeDay.userID).all()
+        # hopeTimeArr = HopeTime.query.order_by(HopeTime.hopeDayID).all()
+
+        # datas = HopeDay.query.join(User).filter(User.id == HopeDay.userID).one()
+        for data in submitArr:
+            print(data)
+            # print(hopeday)
+            # print(data.id)
+            # print(data.name)
+            # print(data.targetYear)
+        # assert False
 
         if userArr is None:
             return render_template('adminHome.html'
                 ,adminID=adminID
                 ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 )
-        elif hopeDayArr is None or hopeTimeArr is None:
+        elif submitArr is None:
             return render_template('adminHome.html'
                 ,adminID=adminID
                 ,userArr=userArr
@@ -325,8 +349,7 @@ def adminHome(adminID):
             return render_template('adminHome.html'
                 ,adminID=adminID
                 ,userArr=userArr
-                ,hopeDayArr=hopeDayArr
-                ,hopeTimeArr=hopeTimeArr
+                ,submitArr=submitArr
                 ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
                 ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST

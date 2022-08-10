@@ -19,17 +19,17 @@
         {% endif %}
     {% endwith %}
     <h4>希望シフト{{ TARGET_DATE_STR }}の提出状況</h4>
-    {% if hopeDayArr %}
+    {% if submitArr %}
         <section class="submitTable">
             <span class="tabelSpan headLabel">氏名</span>
             <span class="tabelSpan headLabel">作成日時</span>
             <span class="tabelSpan headLabel">最終編集者</span>
             <span for="empty" class="tabelSpan headLabel"></span>
-            {% for hopeDay in hopeDayArr %}
-                <span class="tabelSpan">{{ hopeDay.userID }}</span>
-                <span class="tabelSpan">{{ hopeDay.created_at }}</span>
-                <span class="tabelSpan">{{ LAST_EDIT_LIST[hopeDay.isUserSubmission] }}</span>
-                <a class="tabelSpan" href="/{{ hopeDay.userID }}/user/create/{{ PART_FULL_ENG_LIST[user.isFullTime] }}/hopeShift" role="button">編集</a>
+            {% for submit in submitArr %}
+                <span class="tabelSpan">{{ submit.name }}</span>
+                <span class="tabelSpan">{{ submit.created_at }}</span>
+                <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.isUserSubmission] }}</span>
+                <a class="tabelSpan" href="/{{ submit.userID }}/user/create/{{ PART_FULL_ENG_LIST[submit.isFullTime] }}/hopeShift" role="button">編集</a>
             {% endfor %}
         </section>
     {% else %}
