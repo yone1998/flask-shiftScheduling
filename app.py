@@ -1,3 +1,8 @@
+## 命名規則
+# 「ID」は大文字
+# スネークケースが好きではないので、基本、キャメルケースで書いていますが、flask-SQLAlchemyのモデルの項目はスネークケースで書いています。
+# flask-SQLAlchemyのモデルの項目はキャメルケースで書くと、自動的にスネークケースに変換されてしまうので、外部キー制約を行う際にバグの発生源になります。
+
 ## 問題
 # ・保守後にデータベース内の登録をクリアにした際
 # ユーザーのPCに保守前のセッション情報が残っていたらまずい
@@ -59,14 +64,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime, pytz, os
 
 import config
-# from models import User, HopeDay, HopeTime
 
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shift.db'
 
 # csrf = CSRFProtect(app)
-db        = SQLAlchemy(app)
+db        = SQLAlchemy(app, session_options={"autoflush": False})
 bootstrap = Bootstrap(app)
 admin     = Admin(app)
 
@@ -74,25 +78,28 @@ class User(db.Model):
     __tabelname__ = 'user'
     id         = db.Column(db.Integer, primary_key=True)
     name       = db.Column(db.String(10), nullable=False)
-    loginID    = db.Column(db.String(20), nullable=False, unique=True)
+    login_id    = db.Column(db.String(20), nullable=False, unique=True)
     password   = db.Column(db.String(20), nullable=False)
-    isFullTime = db.Column(db.Boolean, nullable=False)
+    is_full_time = db.Column(db.Boolean, nullable=False)
     level      = db.Column(db.Integer, nullable=False)
-
-    hopeDay    = db.relationship('HopeDay', backref='user', lazy=True)
+    hope_day    = db.relationship('HopeDay', backref='user')
 
 class HopeDay(db.Model):
-    __tabelname__ = 'hopeDay'
+    __tabelname__ = 'hope_day'
     id               = db.Column(db.Integer, primary_key=True)
-    userID          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    targetYear       = db.Column(db.Integer, nullable=False)
-    targetMonth      = db.Column(db.Integer, nullable=False)
+    # user_id           = db.Column(db.Integer, nullable=False)
+    user_id          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    target_year       = db.Column(db.Integer, nullable=False)
+    target_month      = db.Column(db.Integer, nullable=False)
     created_at       = db.Column(db.String(30), nullable=False)
-    isUserSubmission = db.Column(db.Boolean, nullable=False)
+    is_user_submission = db.Column(db.Boolean, nullable=False)
+    hope_time    = db.relationship('HopeTime', backref='hope_day')
 
 class HopeTime(db.Model):
+    __tabelname__ = 'hope_time'
     id        = db.Column(db.Integer, primary_key=True)
-    hopeDayID = db.Column(db.Integer, nullable=False)
+    # hope_day_id = db.Column(db.Integer, nullable=False)
+    hope_day_id = db.Column(db.Integer, db.ForeignKey('hope_day.id'), nullable=False)
     day       = db.Column(db.Integer, nullable=False)
     start     = db.Column(db.Integer, nullable=False)
     end       = db.Column(db.Integer, nullable=False)
@@ -129,7 +136,7 @@ def getFullOrPart(userID):
     if user is None:
         return None
     else:
-        return config.PART_FULL_ENG_LIST[user.isFullTime]
+        return config.PART_FULL_ENG_LIST[user.is_full_time]
 
 def isMatchFullOrPart(userID, part_full):
     return part_full == getFullOrPart(userID)
@@ -144,9 +151,9 @@ def tryClearSession():
 # 対象月のhopeDayのIDを返す。なければNone
 def getHopeDayIDOfTarget(userID, targetYearMonth):
     hopeDay = HopeDay.query.filter_by(
-        userID=userID
-        ,targetYear = targetYearMonth[0]
-        ,targetMonth = targetYearMonth[1]
+        user_id=userID
+        ,target_year = targetYearMonth[0]
+        ,target_month = targetYearMonth[1]
         ).one_or_none()
     if hopeDay:
         return hopeDay.id
@@ -156,13 +163,16 @@ def getHopeDayIDOfTarget(userID, targetYearMonth):
 def deleteHopeDayAndHopeTime(deleteHopeDayID):
     deleteHopeDay = HopeDay.query.filter_by(id=deleteHopeDayID).one()
     db.session.delete(deleteHopeDay)
-    db.session.commit()
+    # db.session.flush()
+    # db.session.commit()
     deleteHopeTimeArr = HopeTime.query.filter_by(
-        hopeDayID=deleteHopeDayID
+        hope_day_id=deleteHopeDayID
         )
     for deleteHopeTime in deleteHopeTimeArr:
         db.session.delete(deleteHopeTime)
-        db.session.commit()
+        # db.session.flush()
+        # db.session.commit()
+    db.session.commit()
     print('deleted hopeDay and hopeTime')
 
 # 希望シフトのリスト化
@@ -192,18 +202,18 @@ def addHopeDayAndHopeTime(userID, isUserSubmission, hopeDayList, startList, endL
     # hopeDayレコードの追加
     created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
     addHopeDay = HopeDay(
-        userID=userID
-        ,targetYear=config.TARGET_YEAR_MONTH[0]
-        ,targetMonth=config.TARGET_YEAR_MONTH[1]
+        user_id=userID
+        ,target_year=config.TARGET_YEAR_MONTH[0]
+        ,target_month=config.TARGET_YEAR_MONTH[1]
         ,created_at=created_at
-        ,isUserSubmission=isUserSubmission
+        ,is_user_submission=isUserSubmission
         )
     db.session.add(addHopeDay)
     db.session.commit()
     hopeDay = HopeDay.query.filter_by(
-        userID=userID
-        ,targetYear = config.TARGET_YEAR_MONTH[0]
-        ,targetMonth = config.TARGET_YEAR_MONTH[1]
+        user_id=userID
+        ,target_year = config.TARGET_YEAR_MONTH[0]
+        ,target_month = config.TARGET_YEAR_MONTH[1]
         ).one()
     addHopeDayID = hopeDay.id
     print('addHopeDay')
@@ -211,7 +221,7 @@ def addHopeDayAndHopeTime(userID, isUserSubmission, hopeDayList, startList, endL
     # hopeTimeレコードの追加
     for iDay in range(len(hopeDayList)):
         addHopeTime = HopeTime(
-            hopeDayID=addHopeDayID
+            hope_day_id=addHopeDayID
             ,day=hopeDayList[iDay]
             ,start=startList[iDay]
             ,end=endList[iDay]
@@ -258,7 +268,7 @@ def signup():
             flash('パスワードが一致していません', 'ng')
             return render_template('signup.html', PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
 
-        user = User.query.filter_by(loginID=loginID).one_or_none()
+        user = User.query.filter_by(login_id=loginID).one_or_none()
         if user is None:
             if int(isFullTime) == 1:
                 level = config.FULL_LEVEL
@@ -268,16 +278,16 @@ def signup():
             # Userテーブルに新規登録
             user = User(
                 name=name
-                ,loginID=loginID
+                ,login_id=loginID
                 ,password=generate_password_hash(password, method='sha256')
-                ,isFullTime=bool(int(isFullTime))
+                ,is_full_time=bool(int(isFullTime))
                 ,level=level
                 )
             db.session.add(user)
             db.session.commit()
 
             # session情報にログインしているユーザーのIDを登録
-            user = User.query.filter_by(loginID=loginID).one()
+            user = User.query.filter_by(login_id=loginID).one()
             userID = user.id
             print('get', userID)
             session.permanent = True
@@ -306,7 +316,7 @@ def userLogin():
             isOK = False
             flash('入力もれがあります', 'ng')
         else:
-            user = User.query.filter_by(loginID=loginID).one_or_none()
+            user = User.query.filter_by(login_id=loginID).one_or_none()
             if user is None or check_password_hash(user.password, password) == False:
                 isOK = False
                 flash('ユーザーIDまたはパスワードが正しくありません', 'ng')
@@ -355,11 +365,11 @@ def userHome(userID):
         return redirect(url_for('userLogin'))
 
     if request.method == 'GET':
-        user = User.query.filter_by(id = userID).one()
+        user = User.query.filter_by(id=userID).one()
         hopeDay = HopeDay.query.filter_by(
-            userID = userID
-            ,targetYear = config.TARGET_YEAR_MONTH[0]
-            ,targetMonth = config.TARGET_YEAR_MONTH[1]
+            user_id=userID
+            ,target_year = config.TARGET_YEAR_MONTH[0]
+            ,target_month = config.TARGET_YEAR_MONTH[1]
             ).one_or_none()
         print(hopeDay)
 
@@ -372,7 +382,7 @@ def userHome(userID):
                 ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                 )
         else:
-            hopeTime = HopeTime.query.filter_by(hopeDayID = hopeDay.id).first()
+            hopeTime = HopeTime.query.filter_by(hope_day_id = hopeDay.id).first()
             if hopeTime is not None:
                 return render_template('userHome.html'
                     ,user=user
@@ -380,7 +390,6 @@ def userHome(userID):
                     ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                     ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                     ,hopeDay=hopeDay
-                    ,hopeTime=hopeTime
                     ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
                     )
             else: # 想定外のバグ（hopeDayはあるがhopeTimeはない状態）
@@ -396,12 +405,26 @@ def adminHome():
         return redirect(url_for('adminLogin'))
 
     if request.method == 'GET':
-        userArr  = User.query.order_by(User.isFullTime.desc(), User.id).all()
-        submitArr = db.session.query(User.name, User.isFullTime, HopeDay.created_at, HopeDay.isUserSubmission, HopeDay.userID)\
-            .filter(HopeDay.targetYear == config.TARGET_YEAR_MONTH[0]
-            ,HopeDay.targetMonth == config.TARGET_YEAR_MONTH[1])\
-            .order_by(User.isFullTime.desc(), User.id)\
-            .join(User, HopeDay.userID == User.id).all()
+        userArr  = User.query.order_by(User.is_full_time.desc(), User.id).all()
+        submitArr = db.session.query(
+            User.name
+            ,User.is_full_time
+            ,HopeDay.created_at
+            ,HopeDay.is_user_submission
+            ,HopeDay.user_id)\
+            .filter(HopeDay.target_year == config.TARGET_YEAR_MONTH[0]
+            ,HopeDay.target_month == config.TARGET_YEAR_MONTH[1])\
+            .order_by(User.is_full_time.desc(), User.id)\
+            .join(User, HopeDay.user_id == User.id).all()
+
+        return render_template('adminHome.html'
+            ,userArr=userArr
+            ,submitArr=submitArr
+            ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
+            ,TARGET_DATE_STR=config.TARGET_DATE_STR
+            ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
+            ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
+            )
 
         if userArr is None:
             return render_template('adminHome.html'
@@ -447,7 +470,7 @@ def hopeShift(userID, part_full):
         hopeDayID = getHopeDayIDOfTarget(userID, config.TARGET_YEAR_MONTH)
         if hopeDayID:
             defaultHopeDayList = [0]*len(DAYS_OF_TARGET_MONTH_LIST)
-            hopeTimeArr = HopeTime.query.filter_by(hopeDayID = hopeDayID).order_by(HopeTime.day).all()
+            hopeTimeArr = HopeTime.query.filter_by(hope_day_id=hopeDayID).order_by(HopeTime.day).all()
             for hopeTime in hopeTimeArr:
                 defaultHopeDayList[hopeTime.day-1] = 1
                 defaultStartList[hopeTime.day-1] = hopeTime.start
@@ -515,9 +538,10 @@ def editUserTable():
 @app.route('/admin/create/shift', methods=['GET', 'POST'])
 def createShift():
     if request.method == 'GET':
-        hopeShift
+        # hopeShift
         return render_template('createShift.html'
-            ,hopeShift=hopeShift)
+            ,hopeShift=hopeShift
+            ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH)
 
 @app.route('/logout')
 def logout():

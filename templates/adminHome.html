@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 
-{% block title %}HOME{% endblock %}
+{% block title %}管理者HOME{% endblock %}
 {% block head %}
     {{ super() }}
     <link rel="stylesheet", href="{{ url_for('static', filename='css/adminHome.css') }}">
@@ -28,10 +28,11 @@
             {% for submit in submitArr %}
                 <span class="tabelSpan">{{ submit.name }}</span>
                 <span class="tabelSpan">{{ submit.created_at }}</span>
-                <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.isUserSubmission] }}</span>
-                <a class="tabelSpan" href="/{{ submit.userID }}/user/create/{{ PART_FULL_ENG_LIST[submit.isFullTime] }}/hopeShift" role="button">編集</a>
+                <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
+                <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
             {% endfor %}
         </section>
+        <br>
         <p>「編集」から希望シフトに変更を加えることが出来ます</p>
         <a href="/admin/create/shift" role="button">シフト作成画面へ</a>
     {% else %}
@@ -47,7 +48,7 @@
             <span for="empty" class="tabelSpan headLabel"></span>
             {% for user in userArr %}
                 <span class="tabelSpan">{{ user.name }}</span>
-                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.isFullTime] }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
                 <span class="tabelSpan">{{ user.level }}</span>
                 <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
             {% endfor %}

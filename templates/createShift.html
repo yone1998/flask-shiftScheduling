@@ -1,0 +1,89 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}シフト作成{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/createShift.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h3>シフト作成</h3>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+            <hr>
+        {% endif %}
+    {% endwith %}
+    <h4>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h4>
+    {% if userArr %}
+        <section class="userTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">区分</span>
+            <span class="tabelSpan headLabel">レベル</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for user in userArr %}
+                <span class="tabelSpan">{{ user.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                <span class="tabelSpan">{{ user.level }}</span>
+                <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
+            {% endfor %}
+        </section>
+        <br>
+        <p><a href="/admin/edit/partLevel" role="button">実行</a><br>
+        自動でシフトを作成します</p>
+    {% else %}
+        <p>まだ希望シフトの提出がありません</p>
+    {% endif %}
+    <hr>
+    <h4>【編集】{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月のシフト</h4>
+    {% if userArr %}
+        <section class="userTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">区分</span>
+            <span class="tabelSpan headLabel">レベル</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for user in userArr %}
+                <span class="tabelSpan">{{ user.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                <span class="tabelSpan">{{ user.level }}</span>
+                <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
+            {% endfor %}
+        </section>
+        <br>
+        <p><a href="/admin/edit/partLevel" role="button">公開</a><br><br>
+        完成版として全体に公開します</p>
+        <a href="/admin/edit/partLevel" role="button">一時保存に上書きする</a>
+    {% else %}
+        <p>編集中のシフトはありません</p>
+    {% endif %}
+    <hr>
+    <h4>【一時保存】{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月のシフト</h4>
+    {% if submitArr %}
+        <section class="submitTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">作成日時</span>
+            <span class="tabelSpan headLabel">最終編集者</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for submit in submitArr %}
+                <span class="tabelSpan">{{ submit.name }}</span>
+                <span class="tabelSpan">{{ submit.created_at }}</span>
+                <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
+                <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
+            {% endfor %}
+        </section>
+        <br>
+        <p>1つだけ一時保存することが出来ます<br>
+        ここから変更することはできません<br>
+        【編集】から変更を加えることが出来ます</p>
+        <a href="/admin/create/shift" role="button">【編集に上書きする】</a>
+    {% else %}
+        <p>一時保存中のシフトはありません</p>
+    {% endif %}
+    <hr>
+    <a href="/logout" role="button">ログアウト</a>
+</div>
+{% endblock %}
