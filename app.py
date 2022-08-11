@@ -14,11 +14,15 @@
 # ・フォーム判定
 # Vueに任せて、バックエンドの条件分岐を減らしたい（可読性のため）
 
+# ・登録済み情報を反映させる
+
 # ・CSS
 # メッセージをおしゃれにする
 
 # ・データベースの整合性を保つ
 # HopeDay.idとHopeTime.hopeDayIDで片方しかないIDがあった場合は削除する
+
+# ・pyファイルを分ける
 
 # ・管理者機能
 # 1. 祝日設定（この後に希望調査）
@@ -55,6 +59,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime, pytz, os
 
 import config
+# from models import User, HopeDay, HopeTime
 
 
 app = Flask(__name__)
@@ -79,7 +84,6 @@ class User(db.Model):
 class HopeDay(db.Model):
     __tabelname__ = 'hopeDay'
     id               = db.Column(db.Integer, primary_key=True)
-    # userID           = db.Column(db.Integer, nullable=False)
     userID          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     targetYear       = db.Column(db.Integer, nullable=False)
     targetMonth      = db.Column(db.Integer, nullable=False)
@@ -109,25 +113,26 @@ admin.add_view(ModelView(HopeTime, db.session))
 if not app.secret_key:
     raise ValueError("No SECRET_KEY set for Flask application")
 app.permanent_session_lifetime = datetime.timedelta(minutes=10)
+# -----------------------------------------------
+# -----------------------------------------------
 
-# 引数の数が異なる
-def isPermittedID(ID, target):
-    if target == 'user':
-        return ID == session.get("loggedID")
-    elif target == 'admin':
-        return session.get("loggedID") in config.ADMIN_ID_LIST
+def isMatchLoggedID(userID):
+    return userID == session.get("loggedID")
 
-def isMatchIsFullTime(userID, part_full):
+def isAdminMethod():
+    return session.get("loggedID") == config.ADMIN_ID
+
+# userのisFullTimeを返す。なければNone
+def getFullOrPart(userID):
     user = User.query.filter_by(id=userID).one_or_none()
 
     if user is None:
-        session.clear()
-        return False
-    if part_full != config.PART_FULL_ENG_LIST[user.isFullTime]:
-        session.clear()
-        return False
+        return None
+    else:
+        return config.PART_FULL_ENG_LIST[user.isFullTime]
 
-    return True
+def isMatchFullOrPart(userID, part_full):
+    return part_full == getFullOrPart(userID)
 
 def tryClearSession():
     try:
@@ -135,6 +140,85 @@ def tryClearSession():
         print('message: Session information has been deleted.')
     except AttributeError:
         print('message: Attempted to delete session information, but could not find it.')
+
+# 対象月のhopeDayのIDを返す。なければNone
+def getHopeDayIDOfTarget(userID, targetYearMonth):
+    hopeDay = HopeDay.query.filter_by(
+        userID=userID
+        ,targetYear = targetYearMonth[0]
+        ,targetMonth = targetYearMonth[1]
+        ).one_or_none()
+    if hopeDay:
+        return hopeDay.id
+    else:
+        return None
+
+def deleteHopeDayAndHopeTime(deleteHopeDayID):
+    deleteHopeDay = HopeDay.query.filter_by(id=deleteHopeDayID).one()
+    db.session.delete(deleteHopeDay)
+    db.session.commit()
+    deleteHopeTimeArr = HopeTime.query.filter_by(
+        hopeDayID=deleteHopeDayID
+        )
+    for deleteHopeTime in deleteHopeTimeArr:
+        db.session.delete(deleteHopeTime)
+        db.session.commit()
+    print('deleted hopeDay and hopeTime')
+
+# 希望シフトのリスト化
+def listHopeDayAndHopeTime(part_full):
+    hopeDayList = []
+    if part_full == config.PART_FULL_ENG_LIST[0]:
+        startList = []
+        endList = []
+        for iDay in config.DAYS_OF_TARGET_MONTH_LIST:
+            print(request.form.get(f'hopeDayCheckBox_{iDay}'))
+            if request.form.get(f'hopeDayCheckBox_{iDay}'):
+                hopeDayList.append(iDay)
+                startList.append(int(request.form.get(f'start_{iDay}')))
+                endList.append(int(request.form.get(f'end_{iDay}')))
+    if part_full == config.PART_FULL_ENG_LIST[1]:
+        for iDay in config.DAYS_OF_TARGET_MONTH_LIST:
+            print(request.form.get(f'isHopeHoliday{iDay}'))
+            if request.form.get(f'isHopeHoliday{iDay}') is None:
+                hopeDayList.append(iDay)
+        startList = [config.FULL_TIME_START_END_LIST[0]]*len(hopeDayList)
+        endList = [config.FULL_TIME_START_END_LIST[1]]*len(hopeDayList)
+
+    return hopeDayList, startList, endList
+
+# hopeDayとhopeTimeレコードの追加
+def addHopeDayAndHopeTime(userID, isUserSubmission, hopeDayList, startList, endList):
+    # hopeDayレコードの追加
+    created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
+    addHopeDay = HopeDay(
+        userID=userID
+        ,targetYear=config.TARGET_YEAR_MONTH[0]
+        ,targetMonth=config.TARGET_YEAR_MONTH[1]
+        ,created_at=created_at
+        ,isUserSubmission=isUserSubmission
+        )
+    db.session.add(addHopeDay)
+    db.session.commit()
+    hopeDay = HopeDay.query.filter_by(
+        userID=userID
+        ,targetYear = config.TARGET_YEAR_MONTH[0]
+        ,targetMonth = config.TARGET_YEAR_MONTH[1]
+        ).one()
+    addHopeDayID = hopeDay.id
+    print('addHopeDay')
+
+    # hopeTimeレコードの追加
+    for iDay in range(len(hopeDayList)):
+        addHopeTime = HopeTime(
+            hopeDayID=addHopeDayID
+            ,day=hopeDayList[iDay]
+            ,start=startList[iDay]
+            ,end=endList[iDay]
+            )
+        db.session.add(addHopeTime)
+        db.session.commit()
+        print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeTime')
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -166,7 +250,7 @@ def signup():
         print('loginID')
         print(loginID)
 
-        if len(name) == 0 or len(loginID) == 0 or len(password) == 0 or len(passwordCheck) == 0 or len(isFullTime) == 0:
+        if len(name) * len(loginID) * len(password) * len(passwordCheck) * len(isFullTime) == 0:
             flash('入力もれがあります', 'ng')
             return render_template('signup.html', PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
 
@@ -218,7 +302,7 @@ def userLogin():
         print('password')
         print(len(password) == 0)
 
-        if len(loginID) == 0 or len(password) == 0:
+        if len(loginID) * len(password) == 0:
             isOK = False
             flash('入力もれがあります', 'ng')
         else:
@@ -254,20 +338,19 @@ def adminLogin():
             if adminAuthenticationCode == AUTHENTICATION_CODE:
                 isOK = True
                 session.permanent = True
-                adminID = 0
-                session["loggedID"] = adminID
+                session["loggedID"] = config.ADMIN_ID
             else:
                 isOK = False
                 flash('認証コードが間違っています', 'ng')
 
         if isOK == True:
-            return redirect(url_for('adminHome', adminID=adminID))
+            return redirect(url_for('adminHome'))
         elif isOK == False:
             return render_template('adminLogin.html')
 
 @app.route('/<int:userID>/user/home', methods=['GET', 'POST'])
 def userHome(userID):
-    if not isPermittedID(userID, 'user'):
+    if not isMatchLoggedID(userID):
         session.clear()
         return redirect(url_for('userLogin'))
 
@@ -306,9 +389,9 @@ def userHome(userID):
                 db.session.commit()
                 return redirect(url_for('userHome', userID=userID))
 
-@app.route('/<int:adminID>/admin/home', methods=['GET', 'POST'])
-def adminHome(adminID):
-    if not isPermittedID(adminID, 'user'):
+@app.route('/admin/home', methods=['GET', 'POST'])
+def adminHome():
+    if not isAdminMethod():
         session.clear()
         return redirect(url_for('adminLogin'))
 
@@ -319,35 +402,19 @@ def adminHome(adminID):
             ,HopeDay.targetMonth == config.TARGET_YEAR_MONTH[1])\
             .order_by(User.isFullTime.desc(), User.id)\
             .join(User, HopeDay.userID == User.id).all()
-        # hopeTimeArr = HopeTime.query.all()
-        # userArr     = User.query.order_by(User.isFullTime.desc(), User.id).all()
-        # hopeDayArr  = HopeDay.query.order_by(HopeDay.userID).all()
-        # hopeTimeArr = HopeTime.query.order_by(HopeTime.hopeDayID).all()
-
-        # datas = HopeDay.query.join(User).filter(User.id == HopeDay.userID).one()
-        for data in submitArr:
-            print(data)
-            # print(hopeday)
-            # print(data.id)
-            # print(data.name)
-            # print(data.targetYear)
-        # assert False
 
         if userArr is None:
             return render_template('adminHome.html'
-                ,adminID=adminID
                 ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 )
         elif submitArr is None:
             return render_template('adminHome.html'
-                ,adminID=adminID
                 ,userArr=userArr
                 ,TARGET_DATE_STR=config.TARGET_DATE_STR
                 ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                 )
         else:
             return render_template('adminHome.html'
-                ,adminID=adminID
                 ,userArr=userArr
                 ,submitArr=submitArr
                 ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
@@ -358,15 +425,34 @@ def adminHome(adminID):
 
 @app.route('/<int:userID>/user/create/<string:part_full>/hopeShift', methods=['GET', 'POST'])
 def hopeShift(userID, part_full):
-    if isPermittedID(userID, 'admin'):
+    if isAdminMethod():
         isAdmin = True
     else:
         isAdmin = False
-        if not isPermittedID(userID, 'user') or not isMatchIsFullTime(userID, part_full):
+        if not isMatchLoggedID(userID) or not isMatchFullOrPart(userID, part_full):
             session.clear()
             return redirect(url_for('userLogin'))
 
     if request.method == 'GET':
+        # hopeDay、start、endのデフォルトリストを作成
+        DAYS_OF_TARGET_MONTH_LIST = config.DAYS_OF_TARGET_MONTH_LIST
+        defaultHopeDayList = [1]*len(DAYS_OF_TARGET_MONTH_LIST)
+        if part_full == config.PART_FULL_ENG_LIST[0]:
+            defaultStartList = [config.PART_TIME_START_END_DEFAULT_LIST[0]]*len(defaultHopeDayList)
+            defaultEndList = [config.PART_TIME_START_END_DEFAULT_LIST[1]]*len(defaultHopeDayList)
+        elif part_full == config.PART_FULL_ENG_LIST[1]:
+            defaultStartList = [config.FULL_TIME_START_END_LIST[0]]*len(defaultHopeDayList)
+            defaultEndList = [config.FULL_TIME_START_END_LIST[1]]*len(defaultHopeDayList)
+
+        hopeDayID = getHopeDayIDOfTarget(userID, config.TARGET_YEAR_MONTH)
+        if hopeDayID:
+            defaultHopeDayList = [0]*len(DAYS_OF_TARGET_MONTH_LIST)
+            hopeTimeArr = HopeTime.query.filter_by(hopeDayID = hopeDayID).order_by(HopeTime.day).all()
+            for hopeTime in hopeTimeArr:
+                defaultHopeDayList[hopeTime.day-1] = 1
+                defaultStartList[hopeTime.day-1] = hopeTime.start
+                defaultEndList[hopeTime.day-1] = hopeTime.end
+
         if part_full == config.PART_FULL_ENG_LIST[0]:
             return render_template('hopeShiftPartTime.html'
                 ,userID=userID
@@ -374,12 +460,15 @@ def hopeShift(userID, part_full):
                 ,SMTWTFS=config.SMTWTFS
                 ,DAY_STR_LIST=config.DAY_STR_LIST
                 ,WORK_TIME_RADIO_NAME_LIST=config.WORK_TIME_RADIO_NAME_LIST
-                ,DAY_LABEL_ID_LIST=config.DAY_LABEL_ID_LIST
-                ,HOPE_DAY_CHECK_BOX_NAME_LIST=config.HOPE_DAY_CHECK_BOX_NAME_LIST
-                ,START_SELECT_LIST=config.START_SELECT_LIST
-                ,END_SELECT_LIST=config.END_SELECT_LIST
-                ,START_END_DEFAULT=config.START_END_DEFAULT
+                ,DAYS_OF_TARGET_MONTH_LIST=DAYS_OF_TARGET_MONTH_LIST
+                ,FIRST_SUNDAY_TARGET_MONTH=config.FIRST_SUNDAY_TARGET_MONTH
+                ,PART_TIME_START_OPTION_LIST=config.PART_TIME_START_OPTION_LIST
+                ,PART_TIME_END_OPTION_LIST=config.PART_TIME_END_OPTION_LIST
+                ,PART_TIME_START_END_DEFAULT_LIST=config.PART_TIME_START_END_DEFAULT_LIST
                 ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH
+                ,defaultHopeDayList=defaultHopeDayList
+                ,defaultStartList=defaultStartList
+                ,defaultEndList=defaultEndList
                 )
 
         elif part_full == config.PART_FULL_ENG_LIST[1]:
@@ -388,107 +477,47 @@ def hopeShift(userID, part_full):
                 ,isAdmin=isAdmin
                 ,SMTWTFS=config.SMTWTFS
                 ,NUM_FIRST_WEEKDAY_OF_TARGET_MONTH=config.NUM_FIRST_WEEKDAY_OF_TARGET_MONTH
-                ,SUM_DAYS_OF_TARGET_MONTH=config.SUM_DAYS_OF_TARGET_MONTH
                 ,SUM_BLOCKS_OF_CALENDAR=config.SUM_BLOCKS_OF_CALENDAR
-                ,SELECT_DAYS_LIST=config.SELECT_DAYS_LIST
-                ,FULL_TIME_LIST=config.FULL_TIME_LIST
+                ,DAYS_OF_TARGET_MONTH_LIST=DAYS_OF_TARGET_MONTH_LIST
+                ,FIRST_SUNDAY_TARGET_MONTH=config.FIRST_SUNDAY_TARGET_MONTH
+                ,FULL_TIME_START_END_LIST=config.FULL_TIME_START_END_LIST
                 ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH
+                ,defaultHopeDayList=defaultHopeDayList
+                ,defaultStartList=defaultStartList
+                ,defaultEndList=defaultEndList
                 )
 
     elif request.method == 'POST':
-        hopeDayList = []
-        if part_full == config.PART_FULL_ENG_LIST[0]:
-            startList = []
-            endList = []
-            for iDay in range(config.SUM_DAYS_OF_TARGET_MONTH):
-                print(request.form.get(f'hopeDayCheckBox_{iDay+1}'))
-                if request.form.get(f'hopeDayCheckBox_{iDay+1}'):
-                    hopeDayList.append(iDay+1)
-                    startList.append(int(request.form.get(f'start_{iDay+1}')))
-                    endList.append(int(request.form.get(f'end_{iDay+1}')))
-        if part_full == config.PART_FULL_ENG_LIST[1]:
-            for iDay in range(config.SUM_DAYS_OF_TARGET_MONTH):
-                print(request.form.get(f'isHopeDay{iDay+1}'))
-                if request.form.get(f'isHopeDay{iDay+1}') is None:
-                    hopeDayList.append(iDay+1)
-            startList = [config.FULL_TIME_LIST[0]]*len(hopeDayList)
-            endList = [config.FULL_TIME_LIST[1]]*len(hopeDayList)
+        hopeDayList, startList, endList = listHopeDayAndHopeTime(part_full)
 
-        # HopeDayテーブル
-        # 前回のレコードの削除
-        deleteHopeDay = HopeDay.query.filter_by(
-            userID=userID
-            ,targetYear = config.TARGET_YEAR_MONTH[0]
-            ,targetMonth = config.TARGET_YEAR_MONTH[1]
-            ).one_or_none()
-        if deleteHopeDay:
-            deleteHopeDayID = deleteHopeDay.id
-            db.session.delete(deleteHopeDay)
-            db.session.commit()
-            print('deleteHopeDay')
-        # 今回のレコードの追加
-        created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
-        addHopeDay = HopeDay(
-            userID=userID
-            ,targetYear=config.TARGET_YEAR_MONTH[0]
-            ,targetMonth=config.TARGET_YEAR_MONTH[1]
-            ,created_at=created_at
-            ,isUserSubmission=isAdmin^1
-            )
-        db.session.add(addHopeDay)
-        db.session.commit()
-        print('addHopeDay')
+        deleteHopeDayID = getHopeDayIDOfTarget(userID, config.TARGET_YEAR_MONTH)
 
-        hopeDay = HopeDay.query.filter_by(
-            userID = userID
-            ,targetYear = config.TARGET_YEAR_MONTH[0]
-            ,targetMonth = config.TARGET_YEAR_MONTH[1]
-            ).one_or_none()
-        print(hopeDay, 'one_or_none')
+        # 既存の対象レコードの削除
+        if deleteHopeDayID is not None:
+            deleteHopeDayAndHopeTime(deleteHopeDayID)
 
-        # HopeTimeテーブル
-        # 前回のレコードの削除
-        if deleteHopeDay is not None:
-            deleteHopeTimeArr = HopeTime.query.filter_by(
-                hopeDayID=deleteHopeDayID
-                )
-            print(deleteHopeTimeArr)
-            for deleteHopeTime in deleteHopeTimeArr:
-                db.session.delete(deleteHopeTime)
-                db.session.commit()
-            print('deleteHopeTime')
-        # 今回のレコードの追加
-        hopeDay = HopeDay.query.filter_by(
-            userID=userID
-            ,targetYear = config.TARGET_YEAR_MONTH[0]
-            ,targetMonth = config.TARGET_YEAR_MONTH[1]
-            ).one()
-        print(hopeDay, 'first')
-        for iDay in range(len(hopeDayList)):
-            addHopeTime = HopeTime(
-                hopeDayID=hopeDay.id
-                ,day=hopeDayList[iDay]
-                ,start=startList[iDay]
-                ,end=endList[iDay]
-                )
-            db.session.add(addHopeTime)
-            db.session.commit()
-            print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeTime')
-        print('hopeShiftFinish')
+        addHopeDayAndHopeTime(userID, isAdmin^1, hopeDayList, startList, endList)
 
         if isAdmin:
             flash('希望シフトの変更が完了しました', 'ok')
-            return redirect(url_for('adminHome', adminID=session.get("loggedID")))
+            return redirect(url_for('adminHome'))
         else:
             flash('希望シフトの提出が完了しました', 'ok')
             return redirect(url_for('userHome', userID=userID))
 
-@app.route('/<int:adminID>/edit/userTable/<int:userID>', methods=['GET', 'POST'])
-def editUserTable(adminID):
+@app.route('/admin/delete/userRecord/<int:userID>', methods=['GET', 'POST'])
+def editUserTable():
     if request.method == 'GET':
         return render_template('editUserTable.html')
     elif request.method == 'POST':
-        return redirect(url_for('adminHome'), adminID=adminID)
+        return redirect(url_for('adminHome'))
+
+@app.route('/admin/create/shift', methods=['GET', 'POST'])
+def createShift():
+    if request.method == 'GET':
+        hopeShift
+        return render_template('createShift.html'
+            ,hopeShift=hopeShift)
 
 @app.route('/logout')
 def logout():

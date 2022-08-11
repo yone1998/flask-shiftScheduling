@@ -12,7 +12,7 @@
     <h3>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h3>
     <h4>希望休の選択</h4>
     <p>休みを希望する日のブロックをクリックして赤くしてください</p>
-    <p>社員の勤務時間帯は{{ FULL_TIME_LIST[0] }}-{{ FULL_TIME_LIST[1] }}時で固定となっています</p>
+    <p>社員の勤務時間帯は{{ FULL_TIME_START_END_LIST[0] }}-{{ FULL_TIME_START_END_LIST[1] }}時で固定となっています</p>
     <br>
     <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
     <form method="POST" class="calender">
@@ -29,21 +29,36 @@
             {% endfor %}
             {% for iBlock in range(SUM_BLOCKS_OF_CALENDAR) %}
                 <!-- 先月または来月のときは空白 -->
-                {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= SUM_DAYS_OF_TARGET_MONTH+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
+                {% if iBlock < NUM_FIRST_WEEKDAY_OF_TARGET_MONTH or iBlock >= (DAYS_OF_TARGET_MONTH_LIST | length)+NUM_FIRST_WEEKDAY_OF_TARGET_MONTH %}
                     <div class="calendarBlock"></div>
                 <!-- 今月のとき -->
                 {% else %}
                     {% if iBlock % (SMTWTFS | length) == 0 %}
-                        <label @click="switchHopeDay" class="calendarBlock Sunday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        <label
+                            @click="switchHopeDay" class="calendarBlock Sunday"
+                            id="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        ><input
+                            type="checkbox"
+                            name="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        >{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
                         </label>
                     {% elif iBlock % (SMTWTFS | length) == 6 %}
-                        <label @click="switchHopeDay" class="calendarBlock Saturday" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        <label
+                            @click="switchHopeDay" class="calendarBlock Saturday"
+                            id="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        ><input
+                            type="checkbox"
+                            name="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        >{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
                         </label>
                     {% else %}
-                        <label @click="switchHopeDay" class="calendarBlock" id="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">
-                            <input type="checkbox" name="{{ SELECT_DAYS_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}">{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
+                        <label
+                            @click="switchHopeDay" class="calendarBlock"
+                            id="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        ><input
+                            type="checkbox"
+                            name="isHopeHoliday{{ DAYS_OF_TARGET_MONTH_LIST[iBlock - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH] }}"
+                        >{{ iBlock+1 - NUM_FIRST_WEEKDAY_OF_TARGET_MONTH }}
                         </label>
                     {% endif %}
                 {% endif %}
@@ -52,7 +67,7 @@
         <br>
         <br>
         {% if isAdmin %}
-            <a href="/{{ userID }}/admin/home" role="button" class="btn btn-primary">キャンセル</a>
+            <a href="/admin/home" role="button" class="btn btn-primary">キャンセル</a>
         {% else %}
             <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
         {% endif %}

@@ -15,8 +15,8 @@
             {% for category, message in messages %}
                 <div class="{{ category }}">{{ message }}</div>
             {% endfor %}
+            <hr>
         {% endif %}
-        <hr>
     {% endwith %}
     <form method="POST">
         <label class="form-label">認証コード</label>
