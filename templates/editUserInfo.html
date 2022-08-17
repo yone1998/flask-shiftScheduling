@@ -1,0 +1,41 @@
+{% extends "bootstrap/base.html" %}
+
+{% block title %}管理者HOME{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/editUserInfo.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h3>管理者HOME</h3>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+            <hr>
+        {% endif %}
+    {% endwith %}
+    <h4>ユーザー情報</h4>
+    {% if userArr %}
+        <section class="userTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">区分</span>
+            <span class="tabelSpan headLabel">レベル</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for user in userArr %}
+                <span class="tabelSpan">{{ user.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                <span class="tabelSpan">{{ user.level }}</span>
+                <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
+            {% endfor %}
+        </section>
+        <br>
+        <p><a href="/admin/edit/partLevel" role="button">レベル変更（パート・アルバイト）</a><br>
+        パート・アルバイトから社員への変更は、社員として新規登録し直してください</p>
+    {% else %}
+        <p>ユーザーの登録がありません</p>
+    {% endif %}
+</div>

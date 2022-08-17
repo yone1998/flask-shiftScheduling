@@ -1,14 +1,10 @@
 .container {
-    margin: 10px;
-    width: 375px;
+    margin: 10px auto;
+    width: 1024px;
 }
-.userTable {
+.targetMonthTable {
     display: grid;
-    grid-template-columns: 15% 40% 30% 15%;
-}
-.submitTable {
-    display: grid;
-    grid-template-columns: 15% 40% 30% 15%;
+    grid-template-columns: 80px 150px 80px 150px 100px 80px;
 }
 hr {
     grid-column: span 4;

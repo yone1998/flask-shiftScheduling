@@ -19,17 +19,17 @@
         {% endif %}
     {% endwith %}
     <h4>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h4>
-    {% if userArr %}
-        <section class="userTable">
+    {% if hopeShiftArr %}
+        <section class="hopeShiftTable">
             <span class="tabelSpan headLabel">氏名</span>
             <span class="tabelSpan headLabel">区分</span>
             <span class="tabelSpan headLabel">レベル</span>
             <span for="empty" class="tabelSpan headLabel"></span>
-            {% for user in userArr %}
-                <span class="tabelSpan">{{ user.name }}</span>
-                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
-                <span class="tabelSpan">{{ user.level }}</span>
-                <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
+            {% for hopeShift in hopeShiftArr %}
+                <span class="tabelSpan">{{ hopeShift.User.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[hopeShift.User.is_full_time] }}</span>
+                <span class="tabelSpan">{{ hopeShift.User.level }}</span>
+                <a class="tabelSpan" href="/admin/delete/user/{{ hopeShift.User.id }}" role="button">削除</a>
             {% endfor %}
         </section>
         <br>
@@ -84,6 +84,6 @@
         <p>一時保存中のシフトはありません</p>
     {% endif %}
     <hr>
-    <a href="/logout" role="button">ログアウト</a>
+    <a href="/admin/home" role="button">管理者HOMEに戻る</a>
 </div>
 {% endblock %}

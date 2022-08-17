@@ -7,7 +7,13 @@ def getNumWeekday(year_month,day):
 def getFirstSunday(year_month):
     return len(SMTWTFS) - datetime.date(year_month[0], year_month[1], 1).weekday()
 
+def getDateOfCurrentMonth():
+    dt_now = datetime.datetime.now()
+    return [dt_now.year, dt_now.month]
+
 def getDateOfNextMonth():
+    LAST_MONTH = 12
+
     dt_now = datetime.datetime.now()
     if dt_now.month != LAST_MONTH:
         year = dt_now.year
@@ -17,11 +23,11 @@ def getDateOfNextMonth():
         month = 1
     return [year, month]
 
+
 # ローカル環境用
 SECRET_KEY = 'a1f97b7b5e0fda68759b3ef515663cc8'
 AUTHENTICATION_CODE = 'a1f97b7b5e0fda68759b3ef515663cc8'
 
-LAST_MONTH = 12
 SMTWTFS = ['日', '月', '火', '水', '木', '金', '土']
 FULL_TIME_START_END_LIST = [14, 26]
 PART_TIME_START_OPTION_LIST = [16, 17, 18]
@@ -35,8 +41,10 @@ PART_FULL_ENG_LIST = ['part', 'full']
 PART_FULL_JA_LIST = ['パート・アルバイト', '社員']
 
 # Target is next month
+CURRENT_YEAR_MONTH  = getDateOfCurrentMonth()
 TARGET_YEAR_MONTH  = getDateOfNextMonth()
 FIRST_SUNDAY_TARGET_MONTH = getFirstSunday(TARGET_YEAR_MONTH)
+CURRENT_DATE_STR = f'（{CURRENT_YEAR_MONTH[0]}年{CURRENT_YEAR_MONTH[1]}月）'
 TARGET_DATE_STR = f'（{TARGET_YEAR_MONTH[0]}年{TARGET_YEAR_MONTH[1]}月）'
 HOPE_SHIFT_ADMIN_HOME_STR = f'希望シフト{TARGET_DATE_STR}の提出状況）'
 SUM_DAYS_OF_TARGET_MONTH = calendar.monthrange(TARGET_YEAR_MONTH[0], TARGET_YEAR_MONTH[1])[1]

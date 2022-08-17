@@ -25,7 +25,7 @@
 # メッセージをおしゃれにする
 
 # ・データベースの整合性を保つ
-# HopeDay.idとHopeTime.hopeDayIDで片方しかないIDがあった場合は削除する
+# Submit.idとHopeShift.submit_idで片方しかないIDがあった場合は削除する
 
 # ・pyファイルを分ける
 
@@ -53,6 +53,7 @@
 
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import and_, or_
 # from flask_login import UserMixin
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
@@ -82,24 +83,22 @@ class User(db.Model):
     password   = db.Column(db.String(20), nullable=False)
     is_full_time = db.Column(db.Boolean, nullable=False)
     level      = db.Column(db.Integer, nullable=False)
-    hope_day    = db.relationship('HopeDay', backref='user')
+    submit    = db.relationship('Submit', backref='user')
 
-class HopeDay(db.Model):
-    __tabelname__ = 'hope_day'
+class Submit(db.Model):
+    __tabelname__ = 'submit'
     id               = db.Column(db.Integer, primary_key=True)
-    # user_id           = db.Column(db.Integer, nullable=False)
     user_id          = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     target_year       = db.Column(db.Integer, nullable=False)
     target_month      = db.Column(db.Integer, nullable=False)
     created_at       = db.Column(db.String(30), nullable=False)
     is_user_submission = db.Column(db.Boolean, nullable=False)
-    hope_time    = db.relationship('HopeTime', backref='hope_day')
+    hope_time    = db.relationship('HopeShift', backref='submit')
 
-class HopeTime(db.Model):
+class HopeShift(db.Model):
     __tabelname__ = 'hope_time'
     id        = db.Column(db.Integer, primary_key=True)
-    # hope_day_id = db.Column(db.Integer, nullable=False)
-    hope_day_id = db.Column(db.Integer, db.ForeignKey('hope_day.id'), nullable=False)
+    submit_id = db.Column(db.Integer, db.ForeignKey('submit.id'), nullable=False)
     day       = db.Column(db.Integer, nullable=False)
     start     = db.Column(db.Integer, nullable=False)
     end       = db.Column(db.Integer, nullable=False)
@@ -113,8 +112,8 @@ class HopeTime(db.Model):
 app.secret_key = config.SECRET_KEY
 AUTHENTICATION_CODE = config.AUTHENTICATION_CODE
 admin.add_view(ModelView(User, db.session))
-admin.add_view(ModelView(HopeDay, db.session))
-admin.add_view(ModelView(HopeTime, db.session))
+admin.add_view(ModelView(Submit, db.session))
+admin.add_view(ModelView(HopeShift, db.session))
 # -----------------------------------------------
 # -----------------------------------------------
 if not app.secret_key:
@@ -148,35 +147,31 @@ def tryClearSession():
     except AttributeError:
         print('message: Attempted to delete session information, but could not find it.')
 
-# 対象月のhopeDayのIDを返す。なければNone
-def getHopeDayIDOfTarget(userID, targetYearMonth):
-    hopeDay = HopeDay.query.filter_by(
+# 対象月のsubmitのIDを返す。なければNone
+def getSubmitIDOfTarget(userID, targetYearMonth):
+    submit = Submit.query.filter_by(
         user_id=userID
         ,target_year = targetYearMonth[0]
         ,target_month = targetYearMonth[1]
         ).one_or_none()
-    if hopeDay:
-        return hopeDay.id
+    if submit:
+        return submit.id
     else:
         return None
 
-def deleteHopeDayAndHopeTime(deleteHopeDayID):
-    deleteHopeDay = HopeDay.query.filter_by(id=deleteHopeDayID).one()
-    db.session.delete(deleteHopeDay)
-    # db.session.flush()
-    # db.session.commit()
-    deleteHopeTimeArr = HopeTime.query.filter_by(
-        hope_day_id=deleteHopeDayID
+def deleteSubmitAndHopeShift(deleteSubmitID):
+    deleteSubmit = Submit.query.filter_by(id=deleteSubmitID).one()
+    db.session.delete(deleteSubmit)
+    deleteHopeShiftArr = HopeShift.query.filter_by(
+        submit_id=deleteSubmitID
         )
-    for deleteHopeTime in deleteHopeTimeArr:
-        db.session.delete(deleteHopeTime)
-        # db.session.flush()
-        # db.session.commit()
+    for deleteHopeShift in deleteHopeShiftArr:
+        db.session.delete(deleteHopeShift)
     db.session.commit()
-    print('deleted hopeDay and hopeTime')
+    print('deleted Submit and HopeShift record')
 
 # 希望シフトのリスト化
-def listHopeDayAndHopeTime(part_full):
+def listHopeShift(part_full):
     hopeDayList = []
     if part_full == config.PART_FULL_ENG_LIST[0]:
         startList = []
@@ -197,38 +192,38 @@ def listHopeDayAndHopeTime(part_full):
 
     return hopeDayList, startList, endList
 
-# hopeDayとhopeTimeレコードの追加
-def addHopeDayAndHopeTime(userID, isUserSubmission, hopeDayList, startList, endList):
-    # hopeDayレコードの追加
+# submitとhopeShiftレコードの追加
+def addSubmitAndHopeShift(userID, isUserSubmission, hopeDayList, startList, endList):
+    # submitレコードの追加
     created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
-    addHopeDay = HopeDay(
+    addSubmit = Submit(
         user_id=userID
         ,target_year=config.TARGET_YEAR_MONTH[0]
         ,target_month=config.TARGET_YEAR_MONTH[1]
         ,created_at=created_at
         ,is_user_submission=isUserSubmission
         )
-    db.session.add(addHopeDay)
+    db.session.add(addSubmit)
     db.session.commit()
-    hopeDay = HopeDay.query.filter_by(
+    submit = Submit.query.filter_by(
         user_id=userID
         ,target_year = config.TARGET_YEAR_MONTH[0]
         ,target_month = config.TARGET_YEAR_MONTH[1]
         ).one()
-    addHopeDayID = hopeDay.id
-    print('addHopeDay')
+    addSubmitID = submit.id
+    print('add Submit record')
 
-    # hopeTimeレコードの追加
+    # hopeShiftレコードの追加
     for iDay in range(len(hopeDayList)):
-        addHopeTime = HopeTime(
-            hope_day_id=addHopeDayID
+        addHopeShift = HopeShift(
+            submit_id=addSubmitID
             ,day=hopeDayList[iDay]
             ,start=startList[iDay]
             ,end=endList[iDay]
             )
-        db.session.add(addHopeTime)
+        db.session.add(addHopeShift)
         db.session.commit()
-        print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeTime')
+        print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeShift')
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -366,14 +361,14 @@ def userHome(userID):
 
     if request.method == 'GET':
         user = User.query.filter_by(id=userID).one()
-        hopeDay = HopeDay.query.filter_by(
+        submit = Submit.query.filter_by(
             user_id=userID
             ,target_year = config.TARGET_YEAR_MONTH[0]
             ,target_month = config.TARGET_YEAR_MONTH[1]
             ).one_or_none()
-        print(hopeDay)
+        print(submit)
 
-        if hopeDay is None:
+        if submit is None:
             flash('提出済みの希望シフトはありません', 'ng')
             return render_template('userHome.html'
                 ,user = user
@@ -382,19 +377,19 @@ def userHome(userID):
                 ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
                 )
         else:
-            hopeTime = HopeTime.query.filter_by(hope_day_id = hopeDay.id).first()
-            if hopeTime is not None:
+            hopeShift = HopeShift.query.filter_by(submit_id = submit.id).first()
+            if hopeShift is not None:
                 return render_template('userHome.html'
                     ,user=user
                     ,TARGET_DATE_STR=config.TARGET_DATE_STR
                     ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
                     ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
-                    ,hopeDay=hopeDay
+                    ,submit=submit
                     ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
                     )
-            else: # 想定外のバグ（hopeDayはあるがhopeTimeはない状態）
-                # hopeDayのレコードの削除
-                db.session.delete(hopeDay)
+            else: # 想定外のバグ（Submit.idはあるがHopeShift.submit_idにないIDがある状態）
+                # submitのレコードの削除
+                db.session.delete(submit)
                 db.session.commit()
                 return redirect(url_for('userHome', userID=userID))
 
@@ -405,46 +400,22 @@ def adminHome():
         return redirect(url_for('adminLogin'))
 
     if request.method == 'GET':
-        userArr  = User.query.order_by(User.is_full_time.desc(), User.id).all()
-        submitArr = db.session.query(
-            User.name
-            ,User.is_full_time
-            ,HopeDay.created_at
-            ,HopeDay.is_user_submission
-            ,HopeDay.user_id)\
-            .filter(HopeDay.target_year == config.TARGET_YEAR_MONTH[0]
-            ,HopeDay.target_month == config.TARGET_YEAR_MONTH[1])\
+        targetMonthArr = db.session.query(
+            User, Submit)\
+            .filter(or_(and_(Submit.target_year == config.TARGET_YEAR_MONTH[0]
+            ,Submit.target_month == config.TARGET_YEAR_MONTH[1]), Submit.target_year == None))\
             .order_by(User.is_full_time.desc(), User.id)\
-            .join(User, HopeDay.user_id == User.id).all()
-
+            .outerjoin(Submit, User.id == Submit.user_id)\
+            .all()
+        print(targetMonthArr)
         return render_template('adminHome.html'
-            ,userArr=userArr
-            ,submitArr=submitArr
+            ,targetMonthArr=targetMonthArr
             ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
+            ,CURRENT_DATE_STR=config.CURRENT_DATE_STR
             ,TARGET_DATE_STR=config.TARGET_DATE_STR
             ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
             ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
             )
-
-        if userArr is None:
-            return render_template('adminHome.html'
-                ,TARGET_DATE_STR=config.TARGET_DATE_STR
-                )
-        elif submitArr is None:
-            return render_template('adminHome.html'
-                ,userArr=userArr
-                ,TARGET_DATE_STR=config.TARGET_DATE_STR
-                ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
-                )
-        else:
-            return render_template('adminHome.html'
-                ,userArr=userArr
-                ,submitArr=submitArr
-                ,LAST_EDIT_LIST=config.LAST_EDIT_LIST
-                ,TARGET_DATE_STR=config.TARGET_DATE_STR
-                ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST
-                ,PART_FULL_ENG_LIST=config.PART_FULL_ENG_LIST
-                )
 
 @app.route('/<int:userID>/user/create/<string:part_full>/hopeShift', methods=['GET', 'POST'])
 def hopeShift(userID, part_full):
@@ -467,14 +438,14 @@ def hopeShift(userID, part_full):
             defaultStartList = [config.FULL_TIME_START_END_LIST[0]]*len(defaultHopeDayList)
             defaultEndList = [config.FULL_TIME_START_END_LIST[1]]*len(defaultHopeDayList)
 
-        hopeDayID = getHopeDayIDOfTarget(userID, config.TARGET_YEAR_MONTH)
-        if hopeDayID:
+        submitID = getSubmitIDOfTarget(userID, config.TARGET_YEAR_MONTH)
+        if submitID:
             defaultHopeDayList = [0]*len(DAYS_OF_TARGET_MONTH_LIST)
-            hopeTimeArr = HopeTime.query.filter_by(hope_day_id=hopeDayID).order_by(HopeTime.day).all()
-            for hopeTime in hopeTimeArr:
-                defaultHopeDayList[hopeTime.day-1] = 1
-                defaultStartList[hopeTime.day-1] = hopeTime.start
-                defaultEndList[hopeTime.day-1] = hopeTime.end
+            hopeShiftArr = HopeShift.query.filter_by(submit_id=submitID).order_by(HopeShift.day).all()
+            for hopeShift in hopeShiftArr:
+                defaultHopeDayList[hopeShift.day-1] = 1
+                defaultStartList[hopeShift.day-1] = hopeShift.start
+                defaultEndList[hopeShift.day-1] = hopeShift.end
 
         if part_full == config.PART_FULL_ENG_LIST[0]:
             return render_template('hopeShiftPartTime.html'
@@ -511,15 +482,15 @@ def hopeShift(userID, part_full):
                 )
 
     elif request.method == 'POST':
-        hopeDayList, startList, endList = listHopeDayAndHopeTime(part_full)
+        hopeDayList, startList, endList = listHopeShift(part_full)
 
-        deleteHopeDayID = getHopeDayIDOfTarget(userID, config.TARGET_YEAR_MONTH)
+        deleteSubmitID = getSubmitIDOfTarget(userID, config.TARGET_YEAR_MONTH)
 
         # 既存の対象レコードの削除
-        if deleteHopeDayID is not None:
-            deleteHopeDayAndHopeTime(deleteHopeDayID)
+        if deleteSubmitID is not None:
+            deleteSubmitAndHopeShift(deleteSubmitID)
 
-        addHopeDayAndHopeTime(userID, isAdmin^1, hopeDayList, startList, endList)
+        addSubmitAndHopeShift(userID, isAdmin^1, hopeDayList, startList, endList)
 
         if isAdmin:
             flash('希望シフトの変更が完了しました', 'ok')
@@ -528,7 +499,7 @@ def hopeShift(userID, part_full):
             flash('希望シフトの提出が完了しました', 'ok')
             return redirect(url_for('userHome', userID=userID))
 
-@app.route('/admin/delete/userRecord/<int:userID>', methods=['GET', 'POST'])
+@app.route('/admin/delete/user/<int:userID>', methods=['GET', 'POST'])
 def editUserTable():
     if request.method == 'GET':
         return render_template('editUserTable.html')
@@ -538,10 +509,23 @@ def editUserTable():
 @app.route('/admin/create/shift', methods=['GET', 'POST'])
 def createShift():
     if request.method == 'GET':
-        # hopeShift
+        hopeShiftArr = db.session.query(
+            User, Submit, HopeShift)\
+            .filter(Submit.target_year == config.TARGET_YEAR_MONTH[0]
+            ,Submit.target_month == config.TARGET_YEAR_MONTH[1])\
+            .order_by(User.is_full_time.desc(), User.id)\
+            .join(Submit, User.id == Submit.user_id)\
+            .join(HopeShift, Submit.id == HopeShift.submit_id)\
+            .all()
         return render_template('createShift.html'
-            ,hopeShift=hopeShift
-            ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH)
+            ,hopeShiftArr=hopeShiftArr
+            ,TARGET_YEAR_MONTH=config.TARGET_YEAR_MONTH
+            ,PART_FULL_JA_LIST=config.PART_FULL_JA_LIST)
+
+@app.route('/admin/edit/user', methods=['GET', 'POST'])
+def editUserInfo():
+    if request.method == 'GET':
+        userArr  = User.query.order_by(User.is_full_time.desc(), User.id).all()
 
 @app.route('/logout')
 def logout():

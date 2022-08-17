@@ -22,14 +22,15 @@
     <p>{{ PART_FULL_JA_LIST[user.is_full_time] }}</p>
     <p>{{ user.name }} さん</p>
     <hr>
-    {% if hopeDay %}
-        <h4>提出済みの希望シフト{{ TARGET_DATE_STR }}</h4>
-        <p>作成日時: {{ hopeDay.created_at }}</p>
-        <p>最終編集者: {{ LAST_EDIT_LIST[hopeDay.is_user_submission] }}</p>
+    <h4>提出済みの希望シフト{{ TARGET_DATE_STR }}</h4>
+    {% if submit %}
+        <p>作成日時: {{ submit.created_at }}</p>
+        <p>最終編集者: {{ LAST_EDIT_LIST[submit.is_user_submission] }}</p>
         <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.is_full_time] }}/hopeShift" role="button">再提出する</a>
     {% else %}
-        <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.is_full_time] }}/hopeShift" role="button">希望シフトを作成して提出</a>
-        <p>再提出も可能です</p>
+        <p>提出済みの希望シフトはありません<br>
+        <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.is_full_time] }}/hopeShift" role="button">希望シフトを作成して提出</a><br>
+        再提出も可能です</p>
     {% endif %}
     <hr>
     <a href="/logout" role="button">ログアウト</a>
