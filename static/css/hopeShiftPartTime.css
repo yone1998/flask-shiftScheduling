@@ -30,7 +30,7 @@ a {
     padding-top: 30%;
     /* height: 30px; */
     width: 60px;
-    accent-color: green;
+    accent-color: orange;
 }
 input[type="radio"] {
     accent-color: gray;

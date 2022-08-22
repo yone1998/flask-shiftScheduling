@@ -4,7 +4,6 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet", href="{{ url_for('static', filename='css/hopeShiftPartTime.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -35,43 +34,30 @@
             </section>
         </nav>
     </header>
-    <form method="POST" class="workTimeSelect2">
+    <form method="POST" id="workTimeSelect" class="workTimeSelect2">
         {% for iDay in range( DAY_STR_LIST | length ) %}
+            <!-- 勤務可能日（デフォルト）のとき -->
             {% if defaultHopeDayList[iDay] == 1 %}
                 <input
-                    class="hopeDayCheckBox" v-on:click="switchHopeHoliday" type="checkbox" checked="checked"
+                    class="hopeDayCheckBox isHopeDay" @click="switchHopeDay" type="checkbox" checked="checked"
                     id="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
                     name="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
                 >
+            <!-- 希望休のとき -->
             {% elif defaultHopeDayList[iDay] == 0 %}
                 <input
-                    class="hopeDayCheckBox" v-on:click="switchHopeHoliday" type="checkbox"
+                    class="hopeDayCheckBox" @click="switchHopeDay" type="checkbox"
                     id="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
                     name="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
                 >
             {% endif %}
-            {% if ((iDay+1) - FIRST_SUNDAY_TARGET_MONTH) % (SMTWTFS | length) == 0 %}
-                <label
-                    class="dayLabel Sunday"
-                    id="dayLabel_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                    for="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                >
-            {% elif ((iDay+1) - FIRST_SUNDAY_TARGET_MONTH) % (SMTWTFS | length) == 6 %}
-                <label
-                    class="dayLabel Saturday"
-                    id="dayLabel_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                    for="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                >
-            {% else %}
-                <label
-                    class="dayLabel"
-                    id="dayLabel_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                    for="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                >
-            {% endif %}
-                {{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}
+            <label
+                class="dayLabel"
+                id="dayLabel{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
+            >
+            {{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}
             </label>
-            <section class="startTimeLabel workTimeRadio workTimeSection">
+            <section class="startTimeLabel workTimeRadio workTimeSection" id="start{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
             {% for iStart in PART_TIME_START_OPTION_LIST %}
                 {% if iStart == defaultStartList[iDay] %}
                     <input
@@ -86,7 +72,8 @@
                 {% endif %}
             {% endfor %}
             </section>
-            <section class="endTimeLabel workTimeRadio workTimeSection">
+            <div id="startEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
+            <section class="endTimeLabel workTimeRadio workTimeSection" id="end{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
             {% for iEnd in PART_TIME_END_OPTION_LIST %}
                 {% if iEnd == defaultEndList[iDay] %}
                     <input
@@ -101,36 +88,21 @@
                 {% endif %}
             {% endfor %}
             </section>
+            <div id="endEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
         {% endfor %}
         <br>
         <br>
         {% if isAdmin %}
             <a href="/admin/home" role="button" class="btn btn-primary">キャンセル</a>
         {% else %}
-            <a href="/{{ userID }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
+            <a href="/{{ userId }}/user/home" role="button" class="btn btn-primary">キャンセル</a>
         {% endif %}
         <input type="submit" value="提出" class="btn btn-primary">
     </form>
     <p>データの送信に少し時間がかかることがあります</p>
     <br>
 </div>
-<!-- <script>
-    new Vue({
-        el:".workTimeSelect2",
-        data:{
-        },
-        methods:{
-            switchHopeHoliday:function(event){
-                const words = event.target.name.split('_');
-                const labelElement = document.getElementById('dayLabel_'+words[1])
-                if( labelElement.classList.contains('hopeHoliday')){
-                    labelElement.classList.remove('hopeHoliday')
-                } else {
-                    labelElement.classList.add('hopeHoliday')
-                }
-            }
-        },
-        delimiters: ['[[', ']]']
-    })
-</script> -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="{{ url_for('static', filename='js/date.js') }}"></script>
+<script src="{{ url_for('static', filename='js/hopeShiftPartTime.js') }}"></script>
 {% endblock %}

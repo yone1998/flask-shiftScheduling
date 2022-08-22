@@ -20,7 +20,7 @@
     {% endwith %}
     <h4>今月{{ CURRENT_DATE_STR }}の公開シフト</h4>
     {% if currentShiftArr %}
-        <section class="submitTable">
+        <!-- <section class="submitTable">
             <span class="tabelSpan headLabel">氏名</span>
             <span class="tabelSpan headLabel">作成日時</span>
             <span class="tabelSpan headLabel">最終編集者</span>
@@ -31,7 +31,7 @@
                 <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
                 <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
             {% endfor %}
-        </section>
+        </section> -->
         <br>
         <p>「編集」から希望シフトに変更を加えることが出来ます</p>
         <a href="/admin/create/shift" role="button">シフト作成画面へ</a>
@@ -49,13 +49,15 @@
             <span class="tabelSpan headLabel">提出日時</span>
             <span class="tabelSpan headLabel">最終編集者</span>
             <span for="empty" class="tabelSpan headLabel"></span>
+            <span for="empty" class="tabelSpan headLabel"></span>
             {% for targetMonth in targetMonthArr %}
                 <span class="tabelSpan">{{ targetMonth.User.name }}</span>
                 <span class="tabelSpan">{{ PART_FULL_JA_LIST[targetMonth.User.is_full_time] }}</span>
                 <span class="tabelSpan">{{ targetMonth.User.level }}</span>
-                <span class="tabelSpan">{{ targetMonth.Submit.created_at }}</span>
-                <span class="tabelSpan">{{ LAST_EDIT_LIST[targetMonth.Submit.is_user_submission] }}</span>
+                <span class="tabelSpan">{{ targetMonth.HopeShift.created_at }}</span>
+                <span class="tabelSpan">{{ LAST_EDIT_LIST[targetMonth.HopeShift.is_user_submission] }}</span>
                 <a class="tabelSpan" href="/{{ targetMonth.User.id }}/user/create/{{ PART_FULL_ENG_LIST[targetMonth.User.is_full_time] }}/hopeShift" role="button">編集</a>
+                <a class="tabelSpan" href="/admin/delete/user/{{ targetMonth.User.id }}" role="button">削除</a>
             {% endfor %}
         </section>
         <br>

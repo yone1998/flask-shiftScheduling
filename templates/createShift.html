@@ -7,8 +7,8 @@
 {% endblock %}
 
 {% block body %}
-<div class="container">
-    <h3>シフト作成</h3>
+<div class="container" id="app">
+    <h3>シフト作成{{ TARGET_DATE_STR }}</h3>
     <hr>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -18,17 +18,162 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <h4>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h4>
+    <h4>作成手順</h4>
+    <p>チェックボックスを上から順に埋めてください</p>
+    <hr>
+    <section class="conditionsHead row">
+        <button id="openCloseBtnConditions" class="openCloseBtn" type="button" @click="openAndClose"></button>
+        <h4>条件の設定</h4>
+    </section>
+    <br>
+    <section class="conditionsPage" v-if="isOpen">
+        <form method="POST" class="conditionArr">
+            <label>
+                {{ CONDITION_LIST[0] }}
+                <select name="example" v-model="event" required="required">
+                    <option value="0">{{ EVENT_LIST[0] }}</option>
+                    <option value="1">{{ EVENT_LIST[1] }}</option>
+                    <option value="2">{{ EVENT_LIST[2] }}</option>
+                    <option value="3">{{ EVENT_LIST[3] }}</option>
+                    <option value="4">{{ EVENT_LIST[4] }}</option>
+                    <option value="5">{{ EVENT_LIST[5] }}</option>
+                </select>
+            </label>
+            <label>{{ CONDITION_LIST[1] }} <input type="number" v-model="sumFullTime" min="0" max="5" required="required"></label>
+            <label>{{ CONDITION_LIST[2] }} <input type="number" v-model="sumPartTime" min="0" max="5" required="required"></label>
+            <br>
+            <br>
+            <section class="row">
+                <section class="column">
+                    <div>{{ PARTID_START_END_LIST[0] }}</div>
+                    <div>{{ PARTID_START_END_LIST[1] }}</div>
+                    <div>{{ PARTID_START_END_LIST[2] }}</div>
+                </section>
+                <!-- パートの勤務時間帯 -->
+                <section class="column" v-for='loop in this.sumPartTime_realTime'>
+                    <label>[[ loop ]]</label>
+                    <input
+                        type="number"
+                        :name="[[ 'partStart' + loop ]]"
+                        value="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                        min="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                        max="{{ PART_TIME_START_OPTION_LIST[-1] }}"
+                    >
+                    <input
+                        type="number"
+                        :name="[[ 'partEnd' + loop ]]"
+                        value="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                        min="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                        max="{{ PART_TIME_END_OPTION_LIST[-1] }}"
+                    >
+                </section>
+            </section>
+            <br>
+            <a href="/admin/create/shift/addCondition" role="button" class="btn btn-primary">条件を追加</a>
+        </form>
+        {% if conditionArr %}
+            {% for condition in conditionArr %}
+                <hr>
+                <section class="conditionTable">
+                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[0] }}</span>
+                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[1] }}</span>
+                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[2] }}</span>
+                    <span class="tabelSpan">{{ EVENT_LIST[condition.event] }}</span>
+                    <span class="tabelSpan">{{ condition.sum_full_time }}</span>
+                    <span class="tabelSpan">{{ condition.sum_part_time }}</span>
+                </section>
+                <section class="conditionPartTimeTable">
+                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[0] }}</span>
+                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[1] }}</span>
+                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[2] }}</span>
+                    {% for conditionPartTime in conditionPartTimeArr %}
+                        <span class="tabelSpan">{{ conditionPartTime.part_id }}</span>
+                        <span class="tabelSpan">{{ conditionPartTime.start }}</span>
+                        <span class="tabelSpan">{{ conditionPartTime.end }}</span>
+                    {% endfor %}
+                </section>
+                <a class="tabelSpan" href="/admin/delete/condition" role="button">削除</a>
+            {% endfor %}
+        {% else %}
+            <br>
+            <p>まだ条件が設定されていません</p>
+        {% endif %}
+
+                <!-- {% for hopeShift in hopeShiftArr %}
+                    {% set outer_loop = loop %}
+                    <span class="tabelSpan">{{ hopeShift.User.name }}</span>
+                    <span class="tabelSpan">{{ PART_FULL_JA_LIST[hopeShift.User.is_full_time] }}</span>
+                    <span class="tabelSpan">{{ hopeShift.User.level }}</span>
+                    {% for iDay in range(31) %}
+                        {% if iDay < SUM_DAYS_OF_TARGET_MONTH %}
+                            <span class="tabelSpan">{{ startEndListArr[outer_loop.index0][iDay] }}</span>
+                        {% else %}
+                            <span for="empty" class="tabelSpan"></span>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %} -->
+
+
+
+            <br>
+            <p><a href="/admin/edit/partLevel" role="button">実行</a><br>
+            自動でシフトを作成します</p>
+
+        <!-- <div v-for="condition in conditionArr">
+            <hr class="conditionHr">
+            <label>[[ inputLabelList[0] ]] <input type="text" :value="condition.event"></label>
+            <label>[[ inputLabelList[1] ]] <input type="text" :value="condition.last"></label>
+            <label>[[ inputLabelList[2] ]] <input type="text" :value="condition.sumFullTime"></label>
+            <label>[[ inputLabelList[3] ]] <input type="text" :value="condition.sumPartTime"></label>
+            <section class="row">
+                <section class="column">
+                    <div class="">バイト</div>
+                    <div class="">開始時間</div>
+                    <div class="">終了時間</div>
+                </section>
+                <section class="column" v-for='loop in condition.sumPartTime'>
+                    <label>[[ loop ]]</label>
+                    <input
+                        type="number" :id="[[ 'partStart' + loop ]]"
+                        :value="condition.partStartEndList[0][loop-1]"
+                    >
+                    <input
+                        type="number" :id="[[ 'partEnd' + loop ]]"
+                        :value="condition.partStartEndList[1][loop-1]"
+                    >
+                </section>
+            </section>
+        </div> -->
+    </section>
+    <hr>
+    <h4>希望シフト</h4>
     {% if hopeShiftArr %}
         <section class="hopeShiftTable">
             <span class="tabelSpan headLabel">氏名</span>
             <span class="tabelSpan headLabel">区分</span>
             <span class="tabelSpan headLabel">レベル</span>
+            {% for iDay in range(31) %}
+                {% if iDay < SUM_DAYS_OF_TARGET_MONTH %}
+                    <span for="empty" class="tabelSpan headLabel">{{ iDay+1 }}</span>
+                {% else %}
+                    <span for="empty" class="tabelSpan headLabel"></span>
+                {% endif %}
+            {% endfor %}
+            <span for="empty" class="tabelSpan headLabel"></span>
             <span for="empty" class="tabelSpan headLabel"></span>
             {% for hopeShift in hopeShiftArr %}
+                {% set outer_loop = loop %}
                 <span class="tabelSpan">{{ hopeShift.User.name }}</span>
                 <span class="tabelSpan">{{ PART_FULL_JA_LIST[hopeShift.User.is_full_time] }}</span>
                 <span class="tabelSpan">{{ hopeShift.User.level }}</span>
+                {% for iDay in range(31) %}
+                    {% if iDay < SUM_DAYS_OF_TARGET_MONTH %}
+                        <span class="tabelSpan">{{ startEndListArr[outer_loop.index0][iDay] }}</span>
+                    {% else %}
+                        <span for="empty" class="tabelSpan"></span>
+                    {% endif %}
+                {% endfor %}
+                <a class="tabelSpan" href="/{{ hopeShift.User.id }}/user/create/{{ PART_FULL_ENG_LIST[hopeShift.User.is_full_time] }}/hopeShift" role="button">編集</a>
                 <a class="tabelSpan" href="/admin/delete/user/{{ hopeShift.User.id }}" role="button">削除</a>
             {% endfor %}
         </section>
@@ -39,7 +184,7 @@
         <p>まだ希望シフトの提出がありません</p>
     {% endif %}
     <hr>
-    <h4>【編集】{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月のシフト</h4>
+    <h4>シフトの調整</h4>
     {% if userArr %}
         <section class="userTable">
             <span class="tabelSpan headLabel">氏名</span>
@@ -56,34 +201,56 @@
         <br>
         <p><a href="/admin/edit/partLevel" role="button">公開</a><br><br>
         完成版として全体に公開します</p>
-        <a href="/admin/edit/partLevel" role="button">一時保存に上書きする</a>
+        <p>1つだけ一時保存することが出来ます<br>
+        <a href="/admin/edit/partLevel" role="button">保存する</a></p>
+        <p>一時保存中のシフトをここに開く<br>
+        <a href="/admin/edit/partLevel" role="button">開く</a></p>
+        <p>希望シフトをここに開く<br>
+        <a href="/admin/edit/partLevel" role="button">開く</a></p>
     {% else %}
-        <p>編集中のシフトはありません</p>
+        <p>シフトの自動作成後に使用できます</p>
     {% endif %}
     <hr>
-    <h4>【一時保存】{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月のシフト</h4>
-    {% if submitArr %}
-        <section class="submitTable">
+    <h4>一時保存中のシフト</h4>
+    {% if userArr %}
+        <section class="userTable">
+            <span class="tabelSpan headLabel">氏名</span>
+            <span class="tabelSpan headLabel">区分</span>
+            <span class="tabelSpan headLabel">レベル</span>
+            <span for="empty" class="tabelSpan headLabel"></span>
+            {% for user in userArr %}
+                <span class="tabelSpan">{{ user.name }}</span>
+                <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                <span class="tabelSpan">{{ user.level }}</span>
+                <a class="tabelSpan" href="/admin/delete/userRecord/{{ user.id }}" role="button">削除</a>
+            {% endfor %}
+        </section>
+    {% else %}
+        <p>保存しているシフトはありません</p>
+    {% endif %}
+    <hr>
+    <h4>公開中のシフト</h4>
+    {% if releasedShiftArr %}
+        <!-- <section class="submitTable">
             <span class="tabelSpan headLabel">氏名</span>
             <span class="tabelSpan headLabel">作成日時</span>
             <span class="tabelSpan headLabel">最終編集者</span>
             <span for="empty" class="tabelSpan headLabel"></span>
-            {% for submit in submitArr %}
+            {% for releasedShift in releasedShiftArr %}
                 <span class="tabelSpan">{{ submit.name }}</span>
                 <span class="tabelSpan">{{ submit.created_at }}</span>
                 <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
                 <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
             {% endfor %}
-        </section>
+        </section> -->
         <br>
-        <p>1つだけ一時保存することが出来ます<br>
-        ここから変更することはできません<br>
-        【編集】から変更を加えることが出来ます</p>
-        <a href="/admin/create/shift" role="button">【編集に上書きする】</a>
+        <a href="/admin/delete/releasedShift" role="button">公開を取り消す</a>
     {% else %}
-        <p>一時保存中のシフトはありません</p>
+        <p>公開中のシフトはありません</p>
     {% endif %}
     <hr>
     <a href="/admin/home" role="button">管理者HOMEに戻る</a>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="{{ url_for('static', filename='js/createShift.js') }}"></script>
 {% endblock %}
