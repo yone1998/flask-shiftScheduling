@@ -13,17 +13,53 @@
     transform: translateX(10%) translateY(-40%) rotate(45deg);
 }
 label {
-    margin: 0 10px;
+    margin: 0 10px 0 0;
 }
-input {
-    width: 45px;
+.conditionInput {
+    background-color: rgb(218, 251, 208);
+    border: 1px solid green;
+    padding: 10px;
+    border-radius: 10px;
+    width: 410px;
+}
+.conditionInputTable .th {
+    width: 60px;
+    height: 20px;
+}
+.conditionInputTable .td {
+    width: 60px;
     height: 20px;
 }
 .conditionArr {
     font-size: 12px;
 }
-.conditionHr {
-    margin: 5px;
+.conditionTable {
+    font-size: 12px;
+    width: 330px;
+}
+.conditionTable span {
+    width: 50px;
+}
+.conditionTable span.headLabel {
+    width: 70px;
+}
+.conditionTable span.timeTd {
+    width: 25px;
+}
+.conditionPartTimeTable {
+    font-size: 12px;
+    display: grid;
+    grid-template-columns:60px 60px 60px;
+}
+.conditionInputTable .column {
+    width: 60px;
+}
+.publicHolidayInput {
+    background-color: rgb(218, 251, 208);
+    border: 1px solid green;
+    padding: 10px;
+    border-radius: 10px;
+    width: 250px;
 }
 .column {
     display: flex;
@@ -31,7 +67,7 @@ input {
 }
 .row {
     display: flex;
-    margin: 0 15px;
+    margin: 0;
 }
 .hopeShiftTable {
     font-size: 12px;
@@ -43,9 +79,13 @@ input {
     grid-template-columns: 15% 40% 30% 15%;
 }
 hr {
-    grid-column: span 4;
     width: 100%;
 }
+.conditionBr {
+    grid-column: span 3;
+    width: 100%;
+}
+
 .tabelSpan {
     border-bottom: 1px solid rgba(91, 118, 254, 0.5);
     height: 30px;

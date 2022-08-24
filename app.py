@@ -1,5 +1,5 @@
 ## 命名規則
-# スネークケースが好きではないので、基本、キャメルケースで書いていますが、flask-SQLAlchemyのモデルの項目はスネークケースで書いています。
+# スネークケースが好きではないので、基本、キャメルケースで書いていますが、flask-SQLAlchemyのモデルの項目とテーブル名はスネークケースで書いています。
 # flask-SQLAlchemyのモデルの項目はキャメルケースで書くと、自動的にスネークケースに変換されてしまうので、外部キー制約を行う際にバグの発生源になります。
 
 ## 問題
@@ -15,10 +15,10 @@
 # ・csrf
 
 ## タスク
+# ・データベース関係以外の定数をjsに移す
+
 # ・フォーム判定
 # Vueに任せて、バックエンドの条件分岐を減らしたい（可読性のため）
-
-# ・登録済み情報を反映させる
 
 # ・CSS
 # メッセージをおしゃれにする
@@ -168,17 +168,168 @@ def tryClearSession():
     except AttributeError:
         print('message: Attempted to delete session information, but could not find it.')
 
-# 対象月のhopeShift.idを返す。なければNone
-def getHopeShiftIdOfTarget(userId, targetYearMonth):
-    hopeShift = HopeShift.query.filter_by(
-        user_id=userId
-        ,target_year = targetYearMonth[0]
-        ,target_month = targetYearMonth[1]
-        ).one_or_none()
-    if hopeShift:
-        return hopeShift.id
-    else:
-        return None
+# 希望シフトのリスト化
+def form2list(tableName, **arg):
+    if tableName == 'hope_shift_time':
+        part_full = arg['part_full']
+        hopeDayList = []
+        if part_full == const.PART_FULL_ENG_LIST[0]:
+            startList = []
+            endList = []
+            for iDay in const.DAYS_OF_TARGET_MONTH_LIST:
+                print(request.form.get(f'hopeDayCheckBox_{iDay}'))
+                if request.form.get(f'hopeDayCheckBox_{iDay}'):
+                    hopeDayList.append(iDay)
+                    startList.append(int(request.form.get(f'start_{iDay}')))
+                    endList.append(int(request.form.get(f'end_{iDay}')))
+        if part_full == const.PART_FULL_ENG_LIST[1]:
+            for iDay in const.DAYS_OF_TARGET_MONTH_LIST:
+                print(request.form.get(f'day{iDay}'))
+                if request.form.get(f'day{iDay}'):
+                    hopeDayList.append(iDay)
+            startList = [const.FULL_TIME_START_END_LIST[0]]*len(hopeDayList)
+            endList = [const.FULL_TIME_START_END_LIST[1]]*len(hopeDayList)
+
+        return hopeDayList, startList, endList
+
+    if tableName == 'condition_part_time':
+        sumPartTime = arg['sumPartTime']
+        startList = []
+        endList = []
+        for iPart in range(sumPartTime):
+            startList.append(int(request.form.get(f'partStart{iPart+1}')))
+            endList.append(int(request.form.get(f'partEnd{iPart+1}')))
+
+        # 早い順に並びかえ
+        startEndList = np.vstack((np.array(startList), np.array(endList))).transpose().tolist()
+        startEndList = np.array(sorted(startEndList)).transpose().tolist()
+
+        startList, endList = startEndList
+        return startList, endList
+
+# 対象レコードのIDを返す。なければNone
+def getIdOfTargetRecord(tableName, **filter):
+    if tableName == 'hope_shift':
+        userId = filter['userId']
+        targetYearMonth = filter['targetYearMonth']
+        hopeShift = HopeShift.query.filter_by(
+            user_id=userId
+            ,target_year = targetYearMonth[0]
+            ,target_month = targetYearMonth[1]
+            ).one_or_none()
+        if hopeShift:
+            return hopeShift.id
+        else:
+            return None
+
+    if tableName == 'condition':
+        event = filter['event']
+        sumFullTime = filter['sumFullTime']
+        condition = Condition.query.filter_by(
+            event=event
+            ,sum_full_time=sumFullTime
+            ).one_or_none()
+        if condition:
+            return condition.id
+        else:
+            return None
+
+def deleteTargetRecords(target, deleteId):
+    if target == 'hopeShift':
+        deleteHopeShift = HopeShift.query.filter_by(id=deleteId).one()
+        db.session.delete(deleteHopeShift)
+        deleteHopeShiftTimeArr = HopeShiftTime.query.filter_by(
+            hope_shift_id=deleteId
+            )
+        for deleteHopeShiftTime in deleteHopeShiftTimeArr:
+            db.session.delete(deleteHopeShiftTime)
+        db.session.commit()
+        print('deleted HopeShift and HopeShiftTime record')
+
+    elif target == 'condition':
+        deleteCondition = Condition.query.filter_by(id=deleteId).one()
+        db.session.delete(deleteCondition)
+        deleteConditionPartTimeArr = ConditionPartTime.query.filter_by(
+            condition_id=deleteId
+            )
+        for deleteConditionPartTime in deleteConditionPartTimeArr:
+            db.session.delete(deleteConditionPartTime)
+        db.session.commit()
+        print('deleted Condition and ConditionPartTime record')
+
+def addRecords(target, **arg):
+    if target == 'hopeShift':
+        userId = arg['userId']
+        isUserSubmission = arg['isUserSubmission']
+        hopeDayList = arg['hopeDayList']
+        startList = arg['startList']
+        endList = arg['endList']
+
+        # hopeShiftレコードの追加
+        created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
+        addHopeShift = HopeShift(
+            user_id=userId
+            ,target_year=const.TARGET_YEAR_MONTH[0]
+            ,target_month=const.TARGET_YEAR_MONTH[1]
+            ,created_at=created_at
+            ,is_user_submission=isUserSubmission
+            )
+        db.session.add(addHopeShift)
+        db.session.commit()
+        hopeShift = HopeShift.query.filter_by(
+            user_id=userId
+            ,target_year = const.TARGET_YEAR_MONTH[0]
+            ,target_month = const.TARGET_YEAR_MONTH[1]
+            ).one()
+        addHopeShiftId = hopeShift.id
+        print('add HopeShift record')
+
+        # hopeShiftTimeレコードの追加
+        for iDay in range(len(hopeDayList)):
+            addHopeShiftTime = HopeShiftTime(
+                hope_shift_id=addHopeShiftId
+                ,day=hopeDayList[iDay]
+                ,start=startList[iDay]
+                ,end=endList[iDay]
+                )
+            db.session.add(addHopeShiftTime)
+            db.session.commit()
+            print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeShiftTime')
+
+    elif target == 'condition':
+        event = arg['event']
+        sumFullTime = arg['sumFullTime']
+        sumPartTime = arg['sumPartTime']
+        startList = arg['startList']
+        endList = arg['endList']
+
+        # conditionレコードの追加
+        addCondition = Condition(
+            event = event
+            ,sum_full_time = sumFullTime
+            ,sum_part_time = sumPartTime
+            ,last = max(endList)
+            )
+        db.session.add(addCondition)
+        db.session.commit()
+        condition = Condition.query.filter_by(
+            event = event
+            ,sum_full_time = sumFullTime
+            ).one()
+        addConditionId = condition.id
+        print('add Condition record')
+
+        # conditionPartTimeレコードの追加
+        for iPart in range(len(startList)):
+            addConditionPartTime = ConditionPartTime(
+                condition_id=addConditionId
+                ,part_id=iPart+1
+                ,start=startList[iPart]
+                ,end=endList[iPart]
+                )
+            db.session.add(addConditionPartTime)
+            db.session.commit()
+            print(iPart+1, startList[iPart], endList[iPart], 'addHopeShiftTime')
 
 def table2defaultHopeShiftList(userId, part_full):
     DAYS_OF_TARGET_MONTH_LIST = const.DAYS_OF_TARGET_MONTH_LIST
@@ -190,7 +341,11 @@ def table2defaultHopeShiftList(userId, part_full):
         defaultStartList = [const.FULL_TIME_START_END_LIST[0]]*len(defaultHopeDayList)
         defaultEndList = [const.FULL_TIME_START_END_LIST[1]]*len(defaultHopeDayList)
 
-    hopeShiftId = getHopeShiftIdOfTarget(userId, const.TARGET_YEAR_MONTH)
+    hopeShiftId = getIdOfTargetRecord(
+        'hope_shift'
+        ,userId = userId
+        ,targetYearMonth = const.TARGET_YEAR_MONTH
+        )
     if hopeShiftId:
         defaultHopeDayList = [0]*len(DAYS_OF_TARGET_MONTH_LIST)
         hopeShiftTimeArr = HopeShiftTime.query.filter_by(hope_shift_id=hopeShiftId).order_by(HopeShiftTime.day).all()
@@ -201,137 +356,6 @@ def table2defaultHopeShiftList(userId, part_full):
 
     return defaultHopeDayList, defaultStartList, defaultEndList
 
-# 希望シフトのリスト化
-def form2hopeShiftList(part_full):
-    hopeDayList = []
-    if part_full == const.PART_FULL_ENG_LIST[0]:
-        startList = []
-        endList = []
-        for iDay in const.DAYS_OF_TARGET_MONTH_LIST:
-            print(request.form.get(f'hopeDayCheckBox_{iDay}'))
-            if request.form.get(f'hopeDayCheckBox_{iDay}'):
-                hopeDayList.append(iDay)
-                startList.append(int(request.form.get(f'start_{iDay}')))
-                endList.append(int(request.form.get(f'end_{iDay}')))
-    if part_full == const.PART_FULL_ENG_LIST[1]:
-        for iDay in const.DAYS_OF_TARGET_MONTH_LIST:
-            print(request.form.get(f'day{iDay}'))
-            if request.form.get(f'day{iDay}'):
-                hopeDayList.append(iDay)
-        startList = [const.FULL_TIME_START_END_LIST[0]]*len(hopeDayList)
-        endList = [const.FULL_TIME_START_END_LIST[1]]*len(hopeDayList)
-
-    return hopeDayList, startList, endList
-
-def deleteHopeShiftOrCondition(deleteId, role):
-    if role == 'hopeShift':
-        deleteHopeShift = HopeShift.query.filter_by(id=deleteId).one()
-        db.session.delete(deleteHopeShift)
-        deleteHopeShiftTimeArr = HopeShiftTime.query.filter_by(
-            hope_shift_id=deleteId
-            )
-        for deleteHopeShiftTime in deleteHopeShiftTimeArr:
-            db.session.delete(deleteHopeShiftTime)
-        db.session.commit()
-        print('deleted HopeShift and HopeShiftTime record')
-    elif role == 'condition':
-        deleteCondition = Condition.query.filter_by(id=deleteId).one()
-        db.session.delete(deleteCondition)
-        deleteConditionPartTimeArr = ConditionPartTime.query.filter_by(
-            hope_shift_id=deleteId
-            )
-        for deleteConditionPartTime in deleteConditionPartTimeArr:
-            db.session.delete(deleteConditionPartTime)
-        db.session.commit()
-        print('deleted Condition and ConditionPartTime record')
-
-# hopeShiftとhopeShiftTimeレコードの追加
-def addHopeShiftAndHopeShiftTime(userId, isUserSubmission, hopeDayList, startList, endList):
-    # hopeShiftレコードの追加
-    created_at = str(datetime.datetime.now(pytz.timezone('Asia/Tokyo'))).split(".")[0]
-    addHopeShift = HopeShift(
-        user_id=userId
-        ,target_year=const.TARGET_YEAR_MONTH[0]
-        ,target_month=const.TARGET_YEAR_MONTH[1]
-        ,created_at=created_at
-        ,is_user_submission=isUserSubmission
-        )
-    db.session.add(addHopeShift)
-    db.session.commit()
-    hopeShift = HopeShift.query.filter_by(
-        user_id=userId
-        ,target_year = const.TARGET_YEAR_MONTH[0]
-        ,target_month = const.TARGET_YEAR_MONTH[1]
-        ).one()
-    addHopeShiftId = hopeShift.id
-    print('add HopeShift record')
-
-    # hopeShiftTimeレコードの追加
-    for iDay in range(len(hopeDayList)):
-        addHopeShiftTime = HopeShiftTime(
-            hope_shift_id=addHopeShiftId
-            ,day=hopeDayList[iDay]
-            ,start=startList[iDay]
-            ,end=endList[iDay]
-            )
-        db.session.add(addHopeShiftTime)
-        db.session.commit()
-        print(hopeDayList[iDay], startList[iDay], endList[iDay], 'addHopeShiftTime')
-
-# 条件のリスト化
-def form2conditionPartTimeList():
-    startList = []
-    endList = []
-    iPart = 1
-    while (request.form.get(f'partStart{iPart}') is not None):
-        startList.append(int(request.form.get(f'partStart{iPart}')))
-        endList.append(int(request.form.get(f'partEnd{iPart}')))
-        iPart += 1
-
-    # 早い順に並びかえ
-    startEndList = np.vstack((np.array(startList), np.array(endList))).transpose().tolist()
-    startEndList = np.array(sorted(startEndList)).transpose().tolist()
-
-    startList, endList = startEndList
-    return startList, endList
-
-# conditionとconditionPartTimeレコードの追加
-def addConditionAndConditionPartTime(conditionList, startList, endList):
-    # class Condition(db.Model):
-    # sum_full_time = db.Column(db.Integer, nullable=False)
-    # sum_part_time = db.Column(db.Integer, nullable=False)
-    # last = db.Column(db.Integer, nullable=False)
-# class ConditionPartTime(db.Model):
-#     part_id   = db.Column(db.Integer, nullable=False)
-#     start     = db.Column(db.Integer, nullable=False)
-#     end       = db.Column(db.Integer, nullable=False)
-    # conditionレコードの追加
-    addCondition = Condition(
-        event = conditionList[0]
-        ,sum_full_time = conditionList[1]
-        ,sum_part_time = conditionList[2]
-        ,last = max(endList)
-        )
-    db.session.add(addCondition)
-    db.session.commit()
-    condition = Condition.query.filter_by(
-        event = conditionList[0]
-        ,sum_full_time = conditionList[1]
-        ).one()
-    addConditionId = condition.id
-    print('add Condition record')
-
-    # conditionPartTimeレコードの追加
-    for iPart in range(len(startList)):
-        addConditionPartTime = ConditionPartTime(
-            condition_id=addConditionId
-            ,part_id=iPart+1
-            ,start=startList[iPart]
-            ,end=endList[iPart]
-            )
-        db.session.add(addConditionPartTime)
-        db.session.commit()
-        print(iPart+1, startList[iPart], endList[iPart], 'addHopeShiftTime')
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -549,15 +573,29 @@ def hopeShift(userId, part_full):
                 )
 
     elif request.method == 'POST':
-        hopeDayList, startList, endList = form2hopeShiftList(part_full)
+        hopeDayList, startList, endList = form2list(
+            'hope_shift_time'
+            ,part_full = part_full
+            )
 
-        deleteHopeShiftId = getHopeShiftIdOfTarget(userId, const.TARGET_YEAR_MONTH)
+        deleteHopeShiftId = getIdOfTargetRecord(
+            'hope_shift'
+            ,userId = userId
+            ,targetYearMonth = const.TARGET_YEAR_MONTH
+            )
 
         # 既存の対象レコードの削除
         if deleteHopeShiftId is not None:
-            deleteHopeShiftOrCondition(deleteHopeShiftId, 'hopeShift')
+            deleteTargetRecords('hopeShift', deleteHopeShiftId)
 
-        addHopeShiftAndHopeShiftTime(userId, isAdmin^1, hopeDayList, startList, endList)
+        addRecords(
+            'hopeShift'
+            ,userId = userId
+            ,isUserSubmission = isAdmin^1
+            ,hopeDayList = hopeDayList
+            ,startList = startList
+            ,endList = endList
+            )
 
         if isAdmin:
             flash('希望シフトの変更が完了しました', 'ok')
@@ -566,22 +604,25 @@ def hopeShift(userId, part_full):
             flash('希望シフトの提出が完了しました', 'ok')
             return redirect(url_for('userHome', userId=userId))
 
-@app.route('/admin/home', methods=['GET', 'POST'])
+@app.route('/admin/home', methods=['GET'])
 def adminHome():
     if not isAdminMethod():
         session.clear()
         return redirect(url_for('adminLogin'))
 
     if request.method == 'GET':
+        userArr = User.query\
+            .order_by(User.is_full_time.desc(), User.level, User.id).all()
         targetMonthArr = db.session.query(
             User, HopeShift)\
             .filter(or_(and_(HopeShift.target_year == const.TARGET_YEAR_MONTH[0]
             ,HopeShift.target_month == const.TARGET_YEAR_MONTH[1]), HopeShift.target_year == None))\
-            .order_by(User.is_full_time.desc(), User.id)\
+            .order_by(User.is_full_time.desc(), User.level, User.id)\
             .outerjoin(HopeShift, User.id == HopeShift.user_id)\
             .all()
         print(targetMonthArr)
         return render_template('adminHome.html'
+            ,userArr=userArr
             ,targetMonthArr=targetMonthArr
             ,LAST_EDIT_LIST=const.LAST_EDIT_LIST
             ,CURRENT_DATE_STR=const.CURRENT_DATE_STR
@@ -590,8 +631,23 @@ def adminHome():
             ,PART_FULL_ENG_LIST=const.PART_FULL_ENG_LIST
             )
 
+@app.route('/admin/switch/userLevel/<int:userId>', methods=['GET', 'POST'])
+def switchUserLevel(userId):
+    if not isAdminMethod():
+        session.clear()
+        return redirect(url_for('adminLogin'))
+
+    if request.method == 'GET':
+        user = User.query.filter_by(id=userId).one()
+        if user.level == 1:
+            user.level = 2
+        elif user.level == 2:
+            user.level = 1
+        db.session.commit()
+        return redirect(url_for('adminHome'))
+
 @app.route('/admin/delete/user/<int:userId>', methods=['GET', 'POST'])
-def editUserTable():
+def deleteUser():
     if request.method == 'GET':
         return render_template('editUserTable.html')
     elif request.method == 'POST':
@@ -608,7 +664,7 @@ def createShift():
             User, HopeShift)\
             .filter(HopeShift.target_year == const.TARGET_YEAR_MONTH[0]
             ,HopeShift.target_month == const.TARGET_YEAR_MONTH[1])\
-            .order_by(User.is_full_time.desc(), User.id)\
+            .order_by(User.is_full_time.desc(), User.level, User.id)\
             .join(HopeShift, User.id == HopeShift.user_id)\
             .all()
         startEndListArr = []
@@ -625,8 +681,27 @@ def createShift():
             startEndListArr.append(startEndList)
             print(startEndListArr)
 
+        conditionArr = Condition.query\
+            .order_by(
+            Condition.event
+            ,Condition.sum_full_time
+            ).all()
+        conditionPartTimeArr = db.session.query(
+            Condition, ConditionPartTime)\
+            .order_by(
+                Condition.event
+                ,Condition.sum_full_time
+                ,ConditionPartTime.part_id
+                ,ConditionPartTime.start
+                ,ConditionPartTime.end
+                )\
+            .join(Condition, Condition.id == ConditionPartTime.condition_id)\
+            .all()
+
         return render_template('createShift.html'
             ,hopeShiftArr=hopeShiftArr
+            ,conditionArr=conditionArr
+            ,conditionPartTimeArr=conditionPartTimeArr
             ,TARGET_YEAR_MONTH=const.TARGET_YEAR_MONTH
             ,PART_FULL_JA_LIST=const.PART_FULL_JA_LIST
             ,PART_FULL_ENG_LIST=const.PART_FULL_ENG_LIST
@@ -640,14 +715,52 @@ def createShift():
             ,PARTID_START_END_LIST = const.PARTID_START_END_LIST
             )
 
-@app.route('/admin/create/shift/addCondition', methods=['GET'])
+@app.route('/admin/create/shift/add/condition', methods=['POST'])
 def addCondition():
     if not isAdminMethod():
         session.clear()
         return redirect(url_for('adminLogin'))
 
-    if request.method == 'GET':
+    if request.method == 'POST':
+        print(request.form.get('event'))
+        print(request.form.get('sumFullTime'))
+        print(request.form.get('sumPartTime'))
+        event = int(request.form.get('event'))
+        sumFullTime = int(request.form.get('sumFullTime'))
+        sumPartTime = int(request.form.get('sumPartTime'))
+        startList, endList = form2list(
+            'condition_part_time'
+            ,sumPartTime = sumPartTime
+            )
 
+        deleteConditionId = getIdOfTargetRecord(
+            'condition'
+            ,event = event
+            ,sumFullTime = sumFullTime
+            )
+
+        # 既存の対象レコードの削除
+        if deleteConditionId is not None:
+            deleteTargetRecords('condition', deleteConditionId)
+
+        addRecords('condition'
+            ,event = event
+            ,sumFullTime = sumFullTime
+            ,sumPartTime = sumPartTime
+            ,startList = startList
+            ,endList = endList
+            )
+
+        return redirect(url_for('createShift'))
+
+@app.route('/admin/create/shift/delete/condition/<int:conditionId>', methods=['GET'])
+def deleteCondition(conditionId):
+    if not isAdminMethod():
+        session.clear()
+        return redirect(url_for('adminLogin'))
+
+    if request.method == 'GET':
+        deleteTargetRecords('condition', conditionId)
         return redirect(url_for('createShift'))
 
 @app.route('/admin/edit/user', methods=['GET', 'POST'])

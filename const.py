@@ -33,13 +33,14 @@ FULL_TIME_START_END_LIST = [14, 26]
 PART_TIME_START_OPTION_LIST = [16, 17, 18]
 PART_TIME_END_OPTION_LIST = [22, 23, 24, 25, 26]
 PART_TIME_START_END_DEFAULT_LIST = [16, 26]
-PART_DEFAULT_LEVEL = 1 # 新規登録時に割り当てられる。実際のレベルの設定は管理者が行う。
+PART_DEFAULT_LEVEL = 1 # 新規登録時に割り当てられる。実際のレベルの設定は管理者が行う
+# レベル2は各日に1人以上必要なバイト
 FULL_LEVEL = 3
 ADMIN_ID = 0
 LAST_EDIT_LIST = ['管理者', '本人']
 PART_FULL_ENG_LIST = ['part', 'full']
 PART_FULL_JA_LIST = ['バイト', '社員']
-CONDITION_LIST = ['日付の種類', '社員の数', 'バイトの数']
+CONDITION_LIST = ['日付の種類', '社員の数', 'バイトの数', 'ラスト']
 EVENT_LIST = ['平日', '金', '土', '日', '祝日', '祝前日']
 PARTID_START_END_LIST = ['バイトID', '開始時間', '終了時間']
 
