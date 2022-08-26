@@ -1,0 +1,37 @@
+.container {
+    margin: 10px;
+    width: 375px;
+}
+.explain {
+    font-size: 16px;
+}
+.targetDateStr {
+    font-size: 18px;
+}
+#createWorkDaySelect {
+    font-size: 17px;
+    display: grid;
+    grid-template-columns: 50px 50px 50px 50px 50px 50px 50px;
+}
+.calendarBlock {
+    width: 48px;
+    height: 45px;
+    border: 1px solid;
+    border-color: gray;
+    background-color: rgb(245, 245, 245);
+}
+.SMTWTFS {
+    height: 27px;
+}
+.Sunday {
+    color: red;
+}
+.Saturday {
+    color: blue;
+}
+input[type=checkbox] {
+    display: none;
+}
+label {
+    border: 1px solid black;
+}

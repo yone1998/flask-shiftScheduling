@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}HOME{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/userHome.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="userHome">
+    <h3>HOME</h3>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+            <hr>
+        {% endif %}
+    {% endwith %}
+    <h4>ユーザー情報</h4>
+    <p>{{ PART_FULL_JA_LIST[user.is_full_time] }}</p>
+    <p>{{ user.name }} さん</p>
+    <hr>
+    <h4>提出済みの希望シフト{{ TARGET_DATE_STR }}</h4>
+    {% if hopeShift %}
+        <p>作成日時: {{ hopeShift.created_at }}</p>
+        <p>最終編集者: {{ LAST_EDIT_LIST[hopeShift.is_user_submission] }}</p>
+        <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.is_full_time] }}/hopeShift" role="button">再提出する</a>
+    {% else %}
+        <p>提出済みの希望シフトはありません<br>
+        <br>
+        <a href="/{{ user.id }}/user/create/{{ PART_FULL_ENG_LIST[user.is_full_time] }}/hopeShift" role="button">希望シフトを作成して提出</a><br>
+        再提出も可能です</p>
+    {% endif %}
+    <hr>
+    <a href="/logout" role="button">ログアウト</a>
+</div>
+{% endblock %}
