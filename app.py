@@ -50,6 +50,7 @@
 # エクセルにして吐き出す機能も必要？
 # テストのやり方
 
+from calendar import month
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_
@@ -78,8 +79,8 @@ admin     = Admin(app)
 class User(db.Model):
     __tabelname__ = 'user'
     id         = db.Column(db.Integer, primary_key=True)
-    name       = db.Column(db.String(10), nullable=False)
-    login_id    = db.Column(db.String(20), nullable=False, unique=True)
+    name       = db.Column(db.String(5), nullable=False)
+    email    = db.Column(db.String(256), nullable=False, unique=True)
     password   = db.Column(db.String(20), nullable=False)
     is_full_time = db.Column(db.Boolean, nullable=False)
     level      = db.Column(db.Integer, nullable=False)
@@ -120,6 +121,14 @@ class ConditionPartTime(db.Model):
     start     = db.Column(db.Integer, nullable=False)
     end       = db.Column(db.Integer, nullable=False)
 
+class SpecialDay(db.Model):
+    __tabelname__ = 'special_day'
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    day = db.Column(db.Integer, nullable=False)
+    event = db.Column(db.Integer, nullable=False)
+
 # -----------------------------------------------
 # -----------------------------------------------
 # 本番環境
@@ -136,6 +145,7 @@ admin.add_view(ModelView(HopeShift, db.session))
 admin.add_view(ModelView(HopeShiftTime, db.session))
 admin.add_view(ModelView(Condition, db.session))
 admin.add_view(ModelView(ConditionPartTime, db.session))
+admin.add_view(ModelView(SpecialDay, db.session))
 
 if not app.secret_key:
     raise ValueError("No SECRET_KEY set for Flask application")
@@ -222,15 +232,25 @@ def getIdOfTargetRecord(tableName, **filter):
         else:
             return None
 
-    if tableName == 'condition':
-        event = filter['event']
-        sumFullTime = filter['sumFullTime']
+    elif tableName == 'condition':
         condition = Condition.query.filter_by(
-            event=event
-            ,sum_full_time=sumFullTime
+            event=filter['event']
+            ,sum_full_time=filter['sumFullTime']
             ).one_or_none()
         if condition:
             return condition.id
+        else:
+            return None
+
+    elif tableName == 'special_day':
+        specialDay = SpecialDay.query.filter_by(
+            year=filter['year']
+            ,month=filter['month']
+            ,day=filter['day']
+            ,event=filter['event']
+            ).one_or_none()
+        if specialDay:
+            return specialDay.id
         else:
             return None
 
@@ -256,6 +276,12 @@ def deleteTargetRecords(target, deleteId):
             db.session.delete(deleteConditionPartTime)
         db.session.commit()
         print('deleted Condition and ConditionPartTime record')
+
+    elif target == 'special_day':
+        deleteSpecialDay = SpecialDay.query.filter_by(id=deleteId).one()
+        db.session.delete(deleteSpecialDay)
+        db.session.commit()
+        print('deleted SpecialDay record')
 
 def addRecords(target, **arg):
     if target == 'hopeShift':
@@ -331,6 +357,17 @@ def addRecords(target, **arg):
             db.session.commit()
             print(iPart+1, startList[iPart], endList[iPart], 'addHopeShiftTime')
 
+    elif target == 'special_day':
+        specialDay = SpecialDay(
+            year=arg['year']
+            ,month=arg['month']
+            ,day=arg['day']
+            ,event=arg['event']
+            )
+        db.session.add(specialDay)
+        db.session.commit()
+        print('add SpecialDay record')
+
 def table2defaultHopeShiftList(userId, part_full):
     DAYS_OF_TARGET_MONTH_LIST = const.DAYS_OF_TARGET_MONTH_LIST
     defaultHopeDayList = [1]*len(DAYS_OF_TARGET_MONTH_LIST)
@@ -378,16 +415,16 @@ def signup():
 
     elif request.method == 'POST':
         name  = request.form.get('name')
-        loginId   = request.form.get('loginId')
+        email   = request.form.get('email')
         password  = request.form.get('password')
         passwordCheck  = request.form.get('passwordCheck')
         isFullTime  = request.form.get('isFullTime')
         print('name')
         print(name)
-        print('loginId')
-        print(loginId)
+        print('email')
+        print(email)
 
-        if len(name) * len(loginId) * len(password) * len(passwordCheck) * len(isFullTime) == 0:
+        if len(name) * len(email) * len(password) * len(passwordCheck) * len(isFullTime) == 0:
             flash('入力もれがあります', 'ng')
             return render_template('signup.html', PART_FULL_JA_LIST=const.PART_FULL_JA_LIST)
 
@@ -395,7 +432,7 @@ def signup():
             flash('パスワードが一致していません', 'ng')
             return render_template('signup.html', PART_FULL_JA_LIST=const.PART_FULL_JA_LIST)
 
-        user = User.query.filter_by(login_id=loginId).one_or_none()
+        user = User.query.filter_by(email=email).one_or_none()
         if user is None:
             if int(isFullTime) == 1:
                 level = const.FULL_LEVEL
@@ -405,7 +442,7 @@ def signup():
             # Userテーブルに新規登録
             user = User(
                 name=name
-                ,login_id=loginId
+                ,email=email
                 ,password=generate_password_hash(password, method='sha256')
                 ,is_full_time=bool(int(isFullTime))
                 ,level=level
@@ -414,7 +451,7 @@ def signup():
             db.session.commit()
 
             # session情報にログインしているユーザーのIDを登録
-            user = User.query.filter_by(login_id=loginId).one()
+            user = User.query.filter_by(email=email).one()
             userId = user.id
             print('get', userId)
             session.permanent = True
@@ -434,16 +471,16 @@ def userLogin():
         return render_template('userLogin.html')
 
     elif request.method == 'POST':
-        loginId = request.form.get('loginId')
+        email = request.form.get('email')
         password = request.form.get('password')
         print('password')
         print(len(password) == 0)
 
-        if len(loginId) * len(password) == 0:
+        if len(email) * len(password) == 0:
             isOK = False
             flash('入力もれがあります', 'ng')
         else:
-            user = User.query.filter_by(login_id=loginId).one_or_none()
+            user = User.query.filter_by(email=email).one_or_none()
             if user is None or check_password_hash(user.password, password) == False:
                 isOK = False
                 flash('ユーザーIDまたはパスワードが正しくありません', 'ng')
@@ -761,6 +798,39 @@ def deleteCondition(conditionId):
 
     if request.method == 'GET':
         deleteTargetRecords('condition', conditionId)
+        return redirect(url_for('createShift'))
+
+@app.route('/admin/create/shift/add/specialDay', methods=['POST'])
+def addSpecialDay():
+    if not isAdminMethod():
+        session.clear()
+        return redirect(url_for('adminLogin'))
+
+    if request.method == 'POST':
+        year = const.TARGET_YEAR_MONTH[0]
+        month = const.TARGET_YEAR_MONTH[1]
+        day = int(request.form.get('day'))
+        event = int(request.form.get('event'))
+
+        deleteSpecialDayId = getIdOfTargetRecord(
+            'special_day'
+            ,year=year
+            ,month=month
+            ,day=day
+            ,event = event
+            )
+
+        # 既存の対象レコードの削除
+        if deleteSpecialDayId is not None:
+            deleteTargetRecords('special_day', deleteSpecialDayId)
+
+        addRecords('special_day'
+            ,year=year
+            ,month=month
+            ,day=day
+            ,event = event
+            )
+
         return redirect(url_for('createShift'))
 
 @app.route('/admin/edit/user', methods=['GET', 'POST'])

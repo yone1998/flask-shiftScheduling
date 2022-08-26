@@ -1,3 +1,5 @@
+h4 {
+}
 .container {
     margin: 10px;
     width: 1550px;
@@ -15,12 +17,34 @@
 label {
     margin: 0 10px 0 0;
 }
+summary span{
+    /* padding: 3px; */
+    /* margin: 20px 0; */
+    font-size: 18px;
+    font-weight: bold;
+    /* border-bottom: 3px solid rgb(51, 211, 255); */
+}
+.condition {
+    padding: 10px;
+    border-left: 3px solid rgb(51, 211, 255);
+    /* background-color: rgba(254, 67, 67, 0.1); */
+    /* background-color: transparent;
+	background-image: radial-gradient(rgba(252, 146, 65, 0.3) 1px, transparent 1px);
+	background-size: 20px 20px; */
+}
 .conditionInput {
     background-color: rgb(218, 251, 208);
     border: 1px solid green;
     padding: 10px;
     border-radius: 10px;
     width: 410px;
+}
+.delete {
+    width: 30px;
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+
 }
 .conditionInputTable .th {
     width: 60px;
@@ -44,7 +68,7 @@ label {
     width: 70px;
 }
 .conditionTable span.timeTd {
-    width: 25px;
+    width: 35px;
 }
 .conditionPartTimeTable {
     font-size: 12px;
@@ -54,7 +78,11 @@ label {
 .conditionInputTable .column {
     width: 60px;
 }
-.publicHolidayInput {
+.specialDay {
+    padding: 10px;
+    border-left: 3px solid orange;
+}
+.specialDayInput {
     background-color: rgb(218, 251, 208);
     border: 1px solid green;
     padding: 10px;
@@ -72,7 +100,7 @@ label {
 .hopeShiftTable {
     font-size: 12px;
     display: grid;
-    grid-template-columns:60px 60px 60px repeat(31, 38px) 40px 40px;
+    grid-template-columns:60px 60px 60px repeat(31, 38px) 25px 25px;
 }
 .submitTable {
     display: grid;

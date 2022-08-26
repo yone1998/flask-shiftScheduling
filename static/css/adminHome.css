@@ -4,11 +4,11 @@
 }
 .targetMonthTable {
     display: grid;
-    grid-template-columns: 80px 80px 150px 100px 40px 40px;
+    grid-template-columns: 80px 80px 150px 100px 25px 25px;
 }
 .userTable {
     display: grid;
-    grid-template-columns: 80px 80px 80px 80px 40px;
+    grid-template-columns: 80px 80px 80px 25px 25px;
 }
 hr {
     grid-column: span 4;
