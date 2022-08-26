@@ -26,3 +26,52 @@ hr {
 ul {
     padding-left: 20px;
 }
+.conditionInput {
+    background-color: rgb(218, 251, 208);
+    border: 1px solid green;
+    padding: 10px;
+    border-radius: 10px;
+    width: 410px;
+}
+.conditionInputTable .th {
+    width: 80px;
+    height: 20px;
+}
+.conditionInputTable .td {
+    width: 50px;
+    height: 20px;
+}
+.conditionInput input[type="number"]{
+    width: 40px;
+}
+.conditionArr {
+    font-size: 12px;
+}
+.conditionTable {
+    font-size: 12px;
+    width: 425px;
+    margin-right: 20px;
+}
+.conditionTable .delete {
+    width: 30px;
+    padding-left: 5px;
+    display: flex;
+    /* justify-content: center; */
+    align-items: center;
+    background-color: rgba(91, 118, 254, 0.2);
+}
+.conditionTable span {
+    width: 50px;
+}
+.conditionTable span.headLabel {
+    width: 85px;
+    font-size: 12px;
+}
+.conditionTable span.timeTd {
+    width: 35px;
+}
+.conditionPartTimeTable {
+    font-size: 12px;
+    /* display: grid;
+    grid-template-columns:60px 60px 60px; */
+}

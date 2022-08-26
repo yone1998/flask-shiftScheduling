@@ -19,8 +19,7 @@ const app = new Vue({
     },
     methods:{
         checkForm: function (e) {
-            if (
-                this.name
+            if (this.name
                 && this.email
                 && this.password
                 && this.passwordCheck
@@ -32,46 +31,45 @@ const app = new Vue({
                     && this.password.length <= 20
                     && this.passwordCheck.length <= 20
                     ) {
-
                     return true;
-                }
+                } else {
+                    if (this.name.length > 5) {
+                        this.isOverName = true;
+                    }
+                    if (!this.validEmail(this.email)) {
+                        this.isNotGoodEmail = true
+                    }
+                    if (this.password !== this.passwordCheck) {
+                        this.isUnmatchPassword = true;
+                    }
+                    if (this.password.length > 20) {
+                        this.isOverPassword = true;
+                    }
+                    if (this.passwordCheck.length > 20) {
+                        this.isOverPasswordCheck = true;
+                    }
 
-                if (this.name.length > 5) {
-                    this.isOverName = true;
+                    e.preventDefault();
                 }
-                if (!this.validEmail(this.email)) {
-                    this.isNotGoodEmail = true
+            } else {
+                if (!this.name) {
+                    this.isNoneName = true
                 }
-                if (this.password !== this.passwordCheck) {
-                    this.isUnmatchPassword = true;
+                if (!this.email) {
+                    this.isNoneEmail = true
                 }
-                if (this.password.length > 20) {
-                    this.isOverPassword = true;
+                if (!this.password) {
+                    this.isNonePassword = true
                 }
-                if (this.passwordCheck.length > 20) {
-                    this.isOverPasswordCheck = true;
+                if (!this.passwordCheck) {
+                    this.isNonePasswordCheck = true
+                }
+                if (!this.isFullTime) {
+                    this.isNoneIsFullTime = true
                 }
 
                 e.preventDefault();
             }
-
-        if (!this.name) {
-            this.isNoneName = true;
-        }
-        if (!this.email) {
-            this.isNoneEmail = true;
-        }
-        if (!this.password) {
-            this.isNonePassword = true;
-        }
-        if (!this.passwordCheck) {
-            this.isNonePasswordCheck = true;
-        }
-        if (!this.isFullTime) {
-            this.isNoneIsFullTime = true;
-        }
-
-        e.preventDefault();
         }
         ,validEmail: function (email) {
             var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;

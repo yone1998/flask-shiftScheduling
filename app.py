@@ -54,7 +54,6 @@ from calendar import month
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_
-# from flask_login import UserMixin
 from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -658,14 +657,39 @@ def adminHome():
             .outerjoin(HopeShift, User.id == HopeShift.user_id)\
             .all()
         print(targetMonthArr)
+
+        conditionArr = Condition.query\
+            .order_by(
+            Condition.event
+            ,Condition.sum_full_time
+            ).all()
+        conditionPartTimeArr = db.session.query(
+            Condition, ConditionPartTime)\
+            .order_by(
+                Condition.event
+                ,Condition.sum_full_time
+                ,ConditionPartTime.part_id
+                ,ConditionPartTime.start
+                ,ConditionPartTime.end
+                )\
+            .join(Condition, Condition.id == ConditionPartTime.condition_id)\
+            .all()
+
         return render_template('adminHome.html'
             ,userArr=userArr
             ,targetMonthArr=targetMonthArr
+            ,conditionArr=conditionArr
+            ,conditionPartTimeArr=conditionPartTimeArr
             ,LAST_EDIT_LIST=const.LAST_EDIT_LIST
             ,CURRENT_DATE_STR=const.CURRENT_DATE_STR
             ,TARGET_DATE_STR=const.TARGET_DATE_STR
             ,PART_FULL_JA_LIST=const.PART_FULL_JA_LIST
             ,PART_FULL_ENG_LIST=const.PART_FULL_ENG_LIST
+            ,PART_TIME_START_OPTION_LIST=const.PART_TIME_START_OPTION_LIST
+            ,PART_TIME_END_OPTION_LIST=const.PART_TIME_END_OPTION_LIST
+            ,CONDITION_LIST = const.CONDITION_LIST
+            ,EVENT_LIST = const.EVENT_LIST
+            ,PARTID_START_END_LIST = const.PARTID_START_END_LIST
             )
 
 @app.route('/admin/switch/userLevel/<int:userId>', methods=['GET', 'POST'])
@@ -718,38 +742,23 @@ def createShift():
             startEndListArr.append(startEndList)
             print(startEndListArr)
 
-        conditionArr = Condition.query\
-            .order_by(
-            Condition.event
-            ,Condition.sum_full_time
-            ).all()
-        conditionPartTimeArr = db.session.query(
-            Condition, ConditionPartTime)\
-            .order_by(
-                Condition.event
-                ,Condition.sum_full_time
-                ,ConditionPartTime.part_id
-                ,ConditionPartTime.start
-                ,ConditionPartTime.end
-                )\
-            .join(Condition, Condition.id == ConditionPartTime.condition_id)\
-            .all()
+        specialDayArr = SpecialDay.query\
+            .filter_by(
+                year=const.TARGET_YEAR_MONTH[0]
+                ,month=const.TARGET_YEAR_MONTH[1]
+            ).order_by(SpecialDay.day).all()
 
         return render_template('createShift.html'
             ,hopeShiftArr=hopeShiftArr
-            ,conditionArr=conditionArr
-            ,conditionPartTimeArr=conditionPartTimeArr
+            ,specialDayArr=specialDayArr
             ,TARGET_YEAR_MONTH=const.TARGET_YEAR_MONTH
             ,PART_FULL_JA_LIST=const.PART_FULL_JA_LIST
             ,PART_FULL_ENG_LIST=const.PART_FULL_ENG_LIST
             ,startEndListArr=startEndListArr
+            ,CONDITION_LIST = const.CONDITION_LIST
             ,SUM_DAYS_OF_TARGET_MONTH=const.SUM_DAYS_OF_TARGET_MONTH
             ,TARGET_DATE_STR=const.TARGET_DATE_STR
-            ,PART_TIME_START_OPTION_LIST=const.PART_TIME_START_OPTION_LIST
-            ,PART_TIME_END_OPTION_LIST=const.PART_TIME_END_OPTION_LIST
-            ,CONDITION_LIST = const.CONDITION_LIST
             ,EVENT_LIST = const.EVENT_LIST
-            ,PARTID_START_END_LIST = const.PARTID_START_END_LIST
             )
 
 @app.route('/admin/create/shift/add/condition', methods=['POST'])

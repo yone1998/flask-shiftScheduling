@@ -1,4 +1,4 @@
-{% extends "bootstrap/base.html" %}
+{% extends "base.html" %}
 
 {% block title %}ログイン{% endblock %}
 {% block head %}
@@ -18,11 +18,13 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <form method="POST">
+    <form method="POST" id="app" @submit="checkForm" novalidate="true">
         <label class="form-label">メールアドレス</label>
-        <input type="email" name="email" class="form-control">
+        <input type="email" v-model="email" name="email" class="form-control">
+        <label class="error" v-if="isNoneEmail" v-cloak>メールアドレスが入力されていません</label>
         <label class="form-label">パスワード</label>
-        <input type="password" name="password" class="form-control">
+        <input type="password" v-model="password" name="password" class="form-control">
+        <label class="error" v-if="isNonePassword" v-cloak>パスワードが入力されていません</label>
         <br>
         <input type="submit" value="送信" class="btn btn-primary">
     </form>
@@ -33,4 +35,6 @@
     <br>
     <a href="/adminLogin" role="button">管理者としてログインする</a>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="{{ url_for('static', filename='js/userLogin.js') }}"></script>
 {% endblock %}

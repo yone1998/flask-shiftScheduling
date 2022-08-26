@@ -40,9 +40,9 @@ ADMIN_ID = 0
 LAST_EDIT_LIST = ['管理者', '本人']
 PART_FULL_ENG_LIST = ['part', 'full']
 PART_FULL_JA_LIST = ['バイト', '社員']
-CONDITION_LIST = ['日付の種類', '社員の数', 'バイトの数', 'ラスト']
+CONDITION_LIST = ['日付の種類', '社員 (人)', 'バイト (人)', 'ラスト (時)']
 EVENT_LIST = ['平日', '金', '土', '日', '祝日', '祝前日']
-PARTID_START_END_LIST = ['バイトID', '開始時間', '終了時間']
+PARTID_START_END_LIST = ['バイトID', '開始時間 (時)', '終了時間 (時)']
 
 # Target is next month
 CURRENT_YEAR_MONTH  = getDateOfCurrentMonth()

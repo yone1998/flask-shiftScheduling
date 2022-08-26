@@ -1,20 +1,27 @@
 new Vue({
     delimiters: ['[[', ']]']
-    ,el: "#specialDay"
+    ,el: "#condition"
     ,data: {
         event: ''
-        ,day: ''
+        ,sumFullTime: ''
+        ,sumPartTime: ''
         ,isAnyNone: false
     }
     ,methods: {
         checkForm: function (e) {
-            if (this.event && this.day) {
+            if (this.event
+                && this.sumFullTime
+                && this.sumPartTime
+                ) {
                 return true;
             } else {
                 if (!this.event) {
                     this.isAnyNone = true
                 }
-                if (!this.day) {
+                if (!this.sumFullTime) {
+                    this.isAnyNone = true
+                }
+                if (!this.sumPartTime) {
                     this.isAnyNone = true
                 }
 
@@ -28,7 +35,14 @@ new Vue({
                 this.isAnyNone = false;
             }
         }
-        ,day: function (e) {
+        ,sumFullTime: function (e) {
+            if (e.length > 0) {
+                this.isAnyNone = false;
+            }
+        }
+        ,sumPartTime: function (e) {
+            // このメソッドを実行するとループに反映されるが、もっときれいに書く方法がわからない
+            this.sumPartTime = Number(e)
             if (e.length > 0) {
                 this.isAnyNone = false;
             }
