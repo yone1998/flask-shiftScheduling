@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}管理者HOME{% endblock %}
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet", href="{{ url_for('static', filename='css/adminHome.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <h1>管理者HOME</h1>
+    <hr>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="{{ category }}">{{ message }}</div>
+            {% endfor %}
+            <hr>
+        {% endif %}
+    {% endwith %}
+    <details class="padding-10" open="true">
+        <summary><span class="h2">今月{{ CURRENT_DATE_STR }}の公開シフト</span></summary>
+        {% if currentShiftArr %}
+            <!-- <section class="submitTable">
+                <span class="tabelSpan headLabel">氏名</span>
+                <span class="tabelSpan headLabel">作成日時</span>
+                <span class="tabelSpan headLabel">最終編集者</span>
+                <span for="empty" class="tabelSpan headLabel"></span>
+                {% for submit in submitArr %}
+                    <span class="tabelSpan">{{ submit.name }}</span>
+                    <span class="tabelSpan">{{ submit.created_at }}</span>
+                    <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
+                    <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
+                {% endfor %}
+            </section> -->
+            <br>
+            <p>「編集」から希望シフトに変更を加えることが出来ます</p>
+            <a href="/admin/create/shift" role="button">シフト作成画面へ</a>
+        {% else %}
+            <p>今月の公開シフトは保存されていません</p>
+        {% endif %}
+    </details>
+    <hr>
+    <details class="padding-10" open="true">
+        <summary><span class="h2">来月{{ TARGET_DATE_STR }}の希望シフト</span></summary>
+        <h3>提出状況</h3>
+        {% if targetMonthArr %}
+            <section class="targetMonthTable">
+                <span class="tabelSpan headLabel">氏名</span>
+                <span class="tabelSpan headLabel">区分</span>
+                <span class="tabelSpan headLabel">提出日時</span>
+                <span class="tabelSpan headLabel">最終編集者</span>
+                <span for="empty" class="tabelSpan headLabel"></span>
+                <span for="empty" class="tabelSpan headLabel"></span>
+                {% for targetMonth in targetMonthArr %}
+                    <span class="tabelSpan">{{ targetMonth.User.name }}</span>
+                    <span class="tabelSpan">{{ PART_FULL_JA_LIST[targetMonth.User.is_full_time] }}</span>
+                    <span class="tabelSpan">{{ targetMonth.HopeShift.created_at }}</span>
+                    <span class="tabelSpan">{{ LAST_EDIT_LIST[targetMonth.HopeShift.is_user_submission] }}</span>
+                    <a class="tabelSpan" href="/{{ targetMonth.User.id }}/user/create/{{ PART_FULL_ENG_LIST[targetMonth.User.is_full_time] }}/hopeShift" role="button"><img src="{{ url_for('static', filename='images/edit.png') }}" height="20" width="20"></a>
+                    <a class="tabelSpan" href="/admin/delete/userHopeShift/{{ targetMonth.User.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
+                {% endfor %}
+            </section>
+            <br>
+            <a href="/admin/create/shift" role="button">シフト作成画面へ</a>
+        {% else %}
+            <p>まだ希望シフトの提出がありません</p>
+        {% endif %}
+    </details>
+    <hr>
+    <details class="padding-10" open="true">
+        <summary><span class="h2">ユーザー情報</span></summary>
+        {% if userArr %}
+            <section class="userTable">
+                <span class="tabelSpan headLabel">氏名</span>
+                <span class="tabelSpan headLabel">区分</span>
+                <span class="tabelSpan headLabel">レベル</span>
+                <span for="empty" class="tabelSpan headLabel"></span>
+                <span for="empty" class="tabelSpan headLabel"></span>
+                {% for user in userArr %}
+                    <span class="tabelSpan">{{ user.name }}</span>
+                    <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                    <span class="tabelSpan">{{ user.level }}</span>
+                    {% if user.is_full_time == 0 %}
+                        <a class="tabelSpan" href="/admin/switch/userLevel/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/switch.png') }}" height="20" width="20"></a>
+                    {% else %}
+                        <span for="empty" class="tabelSpan"></span>
+                    {% endif %}
+                    <a class="tabelSpan" href="/admin/delete/user/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
+                {% endfor %}
+            </section>
+            <p>レベル<br>
+            1 : 一般のバイト<br>
+            2 : 各日に1人以上必要なバイト<br>
+            3 : 社員<br>
+            <img src="{{ url_for('static', filename='images/switch.png') }}" height="20" width="20">: バイトのレベルを変更
+            </p>
+        {% else %}
+            <p>まだ登録されていません</p>
+        {% endif %}
+    </details>
+    <hr>
+    <details class="padding-10" open="true">
+        <summary><span class="h2">条件の設定</span></summary>
+        <form method="POST" class="conditionArr" id="condition" @submit="checkForm" novalidate="true">
+            <section class="conditionInput">
+                <label>
+                    {{ CONDITION_LIST[0] }}
+                    <select name="event" v-model="event" required="required" v-cloak>
+                        <option value="0">{{ EVENT_LIST[0] }}</option>
+                        <option value="1">{{ EVENT_LIST[1] }}</option>
+                        <option value="2">{{ EVENT_LIST[2] }}</option>
+                        <option value="3">{{ EVENT_LIST[3] }}</option>
+                        <option value="4">{{ EVENT_LIST[4] }}</option>
+                        <option value="5">{{ EVENT_LIST[5] }}</option>
+                    </select>
+                </label>
+                <label>社員<input type="number" name="sumFullTime" v-model="sumFullTime" min="0" max="5" required="required">人</label>
+                <label>バイト<input type="number" name="sumPartTime" v-model="sumPartTime" min="0" max="5" required="required">人</label>
+                <label class="error" v-if="isAnyNone" v-cloak>入力もれがあります</label>
+                <br>
+                <br>
+                <section class="row conditionInputTable">
+                    <section class="column head">
+                        <div class="th">{{ PARTID_START_END_LIST[0] }}</div>
+                        <div class="th">{{ PARTID_START_END_LIST[1] }}</div>
+                        <div class="th">{{ PARTID_START_END_LIST[2] }}</div>
+                    </section>
+                    <section class="column" v-for='loop in sumPartTime'>
+                        <label class="td" v-cloak>[[ loop ]]</label>
+                        <input
+                            type="number" class="td"
+                            :name="[[ 'partStart' + loop ]]"
+                            min="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                            max="{{ PART_TIME_START_OPTION_LIST[-1] }}"
+                            value="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                            v-cloak
+                        >
+                        <input
+                            type="number" class="td"
+                            :name="[[ 'partEnd' + loop ]]"
+                            min="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                            max="{{ PART_TIME_END_OPTION_LIST[-1] }}"
+                            value="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                            v-cloak
+                        >
+                    </section>
+                </section>
+            </section>
+            <br>
+            <p>「日付の種類」と「社員の数」のペアが同じ条件を２つ以上設定することはできません</p>
+            <!-- すでに設定されている「日付の種類」と「社員の数」のペアで新たに条件を追加すると上書きされます -->
+            <input type="submit" class="btn btn-primary" value="追加する" formaction="/admin/create/shift/add/condition" formmethod="POST">
+        </form>
+        {% if conditionArr %}
+            {% for iEvent in range(EVENT_LIST | length) %}
+                <hr>
+                <h3>{{ EVENT_LIST[iEvent] }}</h3>
+                <section class="row">
+                    {% for condition in conditionArr %}
+                        {% if condition.event == iEvent %}
+                            <section class="conditionTable row">
+                                <a class="delete" href="/admin/create/shift/delete/condition/{{ condition.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
+                                <section class="column headLabel">
+                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[1] }}</span>
+                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[2] }}</span>
+                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[3] }}</span>
+                                </section>
+                                <section class="column">
+                                    <span class="tabelSpan">{{ condition.sum_full_time }}</span>
+                                    <span class="tabelSpan">{{ condition.sum_part_time }}</span>
+                                    <span class="tabelSpan">{{ condition.last }}</span>
+                                </section>
+                                <br>
+                                <section class="conditionPartTimeTable column">
+                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[0] }}</span>
+                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[1] }}</span>
+                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[2] }}</span>
+                                </section>
+                                {% for conditionPartTime in conditionPartTimeArr %}
+                                    {% if conditionPartTime.Condition.id == condition.id %}
+                                        <section class="column">
+                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.part_id }}</span>
+                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.start }}</span>
+                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.end }}</span>
+                                        </section>
+                                    {% endif %}
+                                {% endfor %}
+                            </section>
+                        {% endif %}
+                    {% endfor %}
+                </section>
+            {% endfor %}
+        {% else %}
+            <br>
+            <p>まだ条件が設定されていません</p>
+        {% endif %}
+    </details>
+    <hr>
+    <a href="/logout" role="button">ログアウト</a>
+</div>
+<script src="{{ url_for('static', filename='js/adminHome.js') }}"></script>
+{% endblock %}
