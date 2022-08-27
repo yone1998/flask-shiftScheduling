@@ -5,7 +5,7 @@
 header {
     top: 0;
     position:fixed;
-    height: 156px;
+    height: 176px;
     background-color: white;
     border-bottom: 1px solid;
 }
@@ -23,7 +23,7 @@ a {
     display: grid;
     grid-template-columns: 60px 70px 90px 130px;
     place-items: center;
-    margin-top: 146px;
+    margin-top: 176px;
     /* height: 30px; */
 }
 .hopeDayCheckBox {

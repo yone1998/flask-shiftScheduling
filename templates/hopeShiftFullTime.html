@@ -8,12 +8,10 @@
 
 {% block body %}
 <div class="container">
-    <h3>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h3>
-    <h4>希望休の選択</h4>
-    <p>休みを希望する日のブロックをクリックして赤くしてください</p>
-    <p>社員の勤務時間帯は{{ FULL_TIME_START_END_LIST[0] }}-{{ FULL_TIME_START_END_LIST[1] }}時で固定となっています</p>
-    <br>
-    <div class="targetDateStr">{{ TARGET_DATE_STR }}</div>
+    <h2>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h2>
+    <h3>希望休の選択</h3>
+    <p>休みを希望する日のブロックをクリックして赤くしてください<br>
+        社員の勤務時間帯は{{ FULL_TIME_START_END_LIST[0] }}-{{ FULL_TIME_START_END_LIST[1] }}時で固定となっています</p>
     <form method="POST" class="calender">
         <div id="createWorkDaySelect">
             <!-- 日 月 火 水 木 金 土 -->
@@ -54,8 +52,6 @@
                 {% endif %}
             {% endfor %}
         </div>
-        <br>
-        <br>
         {% if isAdmin %}
             <a href="/admin/home" role="button" class="btn btn-primary">キャンセル</a>
         {% else %}
@@ -63,11 +59,8 @@
         {% endif %}
         <input type="submit" value="提出" class="btn btn-primary">
     </form>
-    <br>
     <p>データの送信に少し時間がかかることがあります</p>
-    <br>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 <script src="{{ url_for('static', filename='js/date.js') }}"></script>
 <script src="{{ url_for('static', filename='js/hopeShiftFullTime.js') }}"></script>
 {% endblock %}

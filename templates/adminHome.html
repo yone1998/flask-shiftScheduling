@@ -22,15 +22,15 @@
         <summary><span class="h2">今月{{ CURRENT_DATE_STR }}の公開シフト</span></summary>
         {% if currentShiftArr %}
             <!-- <section class="submitTable">
-                <span class="tabelSpan headLabel">氏名</span>
-                <span class="tabelSpan headLabel">作成日時</span>
-                <span class="tabelSpan headLabel">最終編集者</span>
-                <span for="empty" class="tabelSpan headLabel"></span>
+                <span class="tableSpan headLabel">氏名</span>
+                <span class="tableSpan headLabel">作成日時</span>
+                <span class="tableSpan headLabel">最終編集者</span>
+                <span for="empty" class="tableSpan headLabel"></span>
                 {% for submit in submitArr %}
-                    <span class="tabelSpan">{{ submit.name }}</span>
-                    <span class="tabelSpan">{{ submit.created_at }}</span>
-                    <span class="tabelSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
-                    <a class="tabelSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
+                    <span class="tableSpan">{{ submit.name }}</span>
+                    <span class="tableSpan">{{ submit.created_at }}</span>
+                    <span class="tableSpan">{{ LAST_EDIT_LIST[submit.is_user_submission] }}</span>
+                    <a class="tableSpan" href="/{{ submit.user_id }}/user/create/{{ PART_FULL_ENG_LIST[submit.is_full_time] }}/hopeShift" role="button">編集</a>
                 {% endfor %}
             </section> -->
             <br>
@@ -46,22 +46,21 @@
         <h3>提出状況</h3>
         {% if targetMonthArr %}
             <section class="targetMonthTable">
-                <span class="tabelSpan headLabel">氏名</span>
-                <span class="tabelSpan headLabel">区分</span>
-                <span class="tabelSpan headLabel">提出日時</span>
-                <span class="tabelSpan headLabel">最終編集者</span>
-                <span for="empty" class="tabelSpan headLabel"></span>
-                <span for="empty" class="tabelSpan headLabel"></span>
+                <span class="tableSpan headLabel">氏名</span>
+                <span class="tableSpan headLabel">区分</span>
+                <span class="tableSpan headLabel">提出日時</span>
+                <span class="tableSpan headLabel">最終編集者</span>
+                <span for="empty" class="tableSpan headLabel"></span>
+                <span for="empty" class="tableSpan headLabel"></span>
                 {% for targetMonth in targetMonthArr %}
-                    <span class="tabelSpan">{{ targetMonth.User.name }}</span>
-                    <span class="tabelSpan">{{ PART_FULL_JA_LIST[targetMonth.User.is_full_time] }}</span>
-                    <span class="tabelSpan">{{ targetMonth.HopeShift.created_at }}</span>
-                    <span class="tabelSpan">{{ LAST_EDIT_LIST[targetMonth.HopeShift.is_user_submission] }}</span>
-                    <a class="tabelSpan" href="/{{ targetMonth.User.id }}/user/create/{{ PART_FULL_ENG_LIST[targetMonth.User.is_full_time] }}/hopeShift" role="button"><img src="{{ url_for('static', filename='images/edit.png') }}" height="20" width="20"></a>
-                    <a class="tabelSpan" href="/admin/delete/userHopeShift/{{ targetMonth.User.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
+                    <span class="tableSpan">{{ targetMonth.User.name }}</span>
+                    <span class="tableSpan">{{ PART_FULL_JA_LIST[targetMonth.User.is_full_time] }}</span>
+                    <span class="tableSpan">{{ targetMonth.HopeShift.created_at }}</span>
+                    <span class="tableSpan">{{ LAST_EDIT_LIST[targetMonth.HopeShift.is_user_submission] }}</span>
+                    <a class="tableSpan" href="/{{ targetMonth.User.id }}/user/create/{{ PART_FULL_ENG_LIST[targetMonth.User.is_full_time] }}/hopeShift" role="button"><img src="{{ url_for('static', filename='images/edit.png') }}" height="20" width="20"></a>
+                    <a class="tableSpan" href="/admin/delete/userHopeShift/{{ targetMonth.User.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
                 {% endfor %}
             </section>
-            <br>
             <a href="/admin/create/shift" role="button">シフト作成画面へ</a>
         {% else %}
             <p>まだ希望シフトの提出がありません</p>
@@ -72,21 +71,21 @@
         <summary><span class="h2">ユーザー情報</span></summary>
         {% if userArr %}
             <section class="userTable">
-                <span class="tabelSpan headLabel">氏名</span>
-                <span class="tabelSpan headLabel">区分</span>
-                <span class="tabelSpan headLabel">レベル</span>
-                <span for="empty" class="tabelSpan headLabel"></span>
-                <span for="empty" class="tabelSpan headLabel"></span>
+                <span class="tableSpan headLabel">氏名</span>
+                <span class="tableSpan headLabel">区分</span>
+                <span class="tableSpan headLabel">レベル</span>
+                <span for="empty" class="tableSpan headLabel"></span>
+                <span for="empty" class="tableSpan headLabel"></span>
                 {% for user in userArr %}
-                    <span class="tabelSpan">{{ user.name }}</span>
-                    <span class="tabelSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
-                    <span class="tabelSpan">{{ user.level }}</span>
+                    <span class="tableSpan">{{ user.name }}</span>
+                    <span class="tableSpan">{{ PART_FULL_JA_LIST[user.is_full_time] }}</span>
+                    <span class="tableSpan">{{ user.level }}</span>
                     {% if user.is_full_time == 0 %}
-                        <a class="tabelSpan" href="/admin/switch/userLevel/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/switch.png') }}" height="20" width="20"></a>
+                        <a class="tableSpan" href="/admin/switch/userLevel/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/switch.png') }}" height="20" width="20"></a>
                     {% else %}
-                        <span for="empty" class="tabelSpan"></span>
+                        <span for="empty" class="tableSpan"></span>
                     {% endif %}
-                    <a class="tabelSpan" href="/admin/delete/user/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
+                    <a class="tableSpan" href="/admin/delete/user/{{ user.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
                 {% endfor %}
             </section>
             <p>レベル<br>
@@ -102,7 +101,7 @@
     <hr>
     <details class="padding-10" open="true">
         <summary><span class="h2">条件の設定</span></summary>
-        <form method="POST" class="conditionArr" id="condition" @submit="checkForm" novalidate="true">
+        <form method="POST" class="condition" id="condition" @submit="checkForm" novalidate="true">
             <section class="conditionInput">
                 <label>
                     {{ CONDITION_LIST[0] }}
@@ -117,33 +116,37 @@
                 </label>
                 <label>社員<input type="number" name="sumFullTime" v-model="sumFullTime" min="0" max="5" required="required">人</label>
                 <label>バイト<input type="number" name="sumPartTime" v-model="sumPartTime" min="0" max="5" required="required">人</label>
-                <label class="error" v-if="isAnyNone" v-cloak>入力もれがあります</label>
+                <div class="error" v-if="isAnyNone" v-cloak>入力もれがあります</div>
                 <br>
                 <br>
                 <section class="row conditionInputTable">
-                    <section class="column head">
+                    <section class="head">
                         <div class="th">{{ PARTID_START_END_LIST[0] }}</div>
                         <div class="th">{{ PARTID_START_END_LIST[1] }}</div>
                         <div class="th">{{ PARTID_START_END_LIST[2] }}</div>
                     </section>
-                    <section class="column" v-for='loop in sumPartTime'>
-                        <label class="td" v-cloak>[[ loop ]]</label>
-                        <input
-                            type="number" class="td"
-                            :name="[[ 'partStart' + loop ]]"
-                            min="{{ PART_TIME_START_OPTION_LIST[0] }}"
-                            max="{{ PART_TIME_START_OPTION_LIST[-1] }}"
-                            value="{{ PART_TIME_START_OPTION_LIST[0] }}"
-                            v-cloak
-                        >
-                        <input
-                            type="number" class="td"
-                            :name="[[ 'partEnd' + loop ]]"
-                            min="{{ PART_TIME_END_OPTION_LIST[0] }}"
-                            max="{{ PART_TIME_END_OPTION_LIST[-1] }}"
-                            value="{{ PART_TIME_END_OPTION_LIST[0] }}"
-                            v-cloak
-                        >
+                    <section v-for='loop in sumPartTime'>
+                        <div class="td partId" v-cloak>[[ loop ]]</div>
+                        <div class="td">
+                            <input
+                                type="number"
+                                :name="[[ 'partStart' + loop ]]"
+                                min="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                                max="{{ PART_TIME_START_OPTION_LIST[-1] }}"
+                                value="{{ PART_TIME_START_OPTION_LIST[0] }}"
+                                v-cloak
+                            >
+                        </div>
+                        <div class="td">
+                            <input
+                                type="number"
+                                :name="[[ 'partEnd' + loop ]]"
+                                min="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                                max="{{ PART_TIME_END_OPTION_LIST[-1] }}"
+                                value="{{ PART_TIME_END_OPTION_LIST[0] }}"
+                                v-cloak
+                            >
+                        </div>
                     </section>
                 </section>
             </section>
@@ -161,28 +164,28 @@
                         {% if condition.event == iEvent %}
                             <section class="conditionTable row">
                                 <a class="delete" href="/admin/create/shift/delete/condition/{{ condition.id }}" role="button"><img src="{{ url_for('static', filename='images/delete.png') }}" height="20" width="20"></a>
-                                <section class="column headLabel">
-                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[1] }}</span>
-                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[2] }}</span>
-                                    <span class="tabelSpan headLabel">{{ CONDITION_LIST[3] }}</span>
+                                <section class="head1">
+                                    <div class="tableSpan">{{ CONDITION_LIST[1] }}</div>
+                                    <div class="tableSpan">{{ CONDITION_LIST[2] }}</div>
+                                    <div class="tableSpan">{{ CONDITION_LIST[3] }}</div>
                                 </section>
-                                <section class="column">
-                                    <span class="tabelSpan">{{ condition.sum_full_time }}</span>
-                                    <span class="tabelSpan">{{ condition.sum_part_time }}</span>
-                                    <span class="tabelSpan">{{ condition.last }}</span>
+                                <section>
+                                    <div class="tableSpan">{{ condition.sum_full_time }}</div>
+                                    <div class="tableSpan">{{ condition.sum_part_time }}</div>
+                                    <div class="tableSpan">{{ condition.last }}</div>
                                 </section>
                                 <br>
-                                <section class="conditionPartTimeTable column">
-                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[0] }}</span>
-                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[1] }}</span>
-                                    <span class="tabelSpan headLabel">{{ PARTID_START_END_LIST[2] }}</span>
+                                <section class="head2">
+                                    <div class="tableSpan headLabel">{{ PARTID_START_END_LIST[0] }}</div>
+                                    <div class="tableSpan headLabel">{{ PARTID_START_END_LIST[1] }}</div>
+                                    <div class="tableSpan headLabel">{{ PARTID_START_END_LIST[2] }}</div>
                                 </section>
                                 {% for conditionPartTime in conditionPartTimeArr %}
                                     {% if conditionPartTime.Condition.id == condition.id %}
-                                        <section class="column">
-                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.part_id }}</span>
-                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.start }}</span>
-                                            <span class="tabelSpan timeTd">{{ conditionPartTime.ConditionPartTime.end }}</span>
+                                        <section>
+                                            <div class="tableSpan timeTd">{{ conditionPartTime.ConditionPartTime.part_id }}</div>
+                                            <div class="tableSpan timeTd">{{ conditionPartTime.ConditionPartTime.start }}</div>
+                                            <div class="tableSpan timeTd">{{ conditionPartTime.ConditionPartTime.end }}</div>
                                         </section>
                                     {% endif %}
                                 {% endfor %}

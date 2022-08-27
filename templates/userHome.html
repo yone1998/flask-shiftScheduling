@@ -8,7 +8,7 @@
 
 {% block body %}
 <div class="userHome">
-    <h3>HOME</h3>
+    <h1>HOME</h1>
     <hr>
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -18,11 +18,11 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <h4>ユーザー情報</h4>
+    <h2>ユーザー情報</h2>
     <p>{{ PART_FULL_JA_LIST[user.is_full_time] }}</p>
     <p>{{ user.name }} さん</p>
     <hr>
-    <h4>提出済みの希望シフト{{ TARGET_DATE_STR }}</h4>
+    <h2>提出済みの希望シフト{{ TARGET_DATE_STR }}</h2>
     {% if hopeShift %}
         <p>作成日時: {{ hopeShift.created_at }}</p>
         <p>最終編集者: {{ LAST_EDIT_LIST[hopeShift.is_user_submission] }}</p>

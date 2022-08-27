@@ -1,5 +1,5 @@
 body {
-    font-family: 'Noto Sans JP', sans-serif;
+    font-family: 'Noto Sans JP', "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
     font-size: 2rem;
     margin: 10px;
     width: 375px;
@@ -8,18 +8,18 @@ body {
 }
 .ok {
     font-size: 18px;
-    background-color: skyblue;
+    color: blue;
     border-radius: 4px;
 }
 .ng {
     font-size: 18px;
-    background-color: pink;
+    color: red;
     border-radius: 4px;
 }
 .error {
     color: red;
 }
-p {
+p, div {
     font-size: 1rem;
 }
 h1 {
@@ -52,6 +52,7 @@ summary {
 }
 label {
     font-size: 1rem;
+    margin-right: 10px;
 }
 a {
     font-size: 1rem;

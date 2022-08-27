@@ -14,38 +14,38 @@ hr {
     grid-column: span 4;
     width: 100%;
 }
-.tabelSpan {
-    border-bottom: 1px solid rgba(91, 118, 254, 0.5);
-    height: 30px;
-    text-align: center;
-    padding-top: 5px;
-}
-.headLabel {
+.head, .head1, .head2 {
     background-color: rgba(91, 118, 254, 0.2);
 }
 ul {
     padding-left: 20px;
+}
+.condition {
+    font-size: 12px;
 }
 .conditionInput {
     background-color: rgb(218, 251, 208);
     border: 1px solid green;
     padding: 10px;
     border-radius: 10px;
-    width: 410px;
+    width: 420px;
 }
-.conditionInputTable .th {
-    width: 80px;
-    height: 20px;
+.conditionInputTable {
+    width: 350px;
 }
-.conditionInputTable .td {
-    width: 50px;
-    height: 20px;
+.conditionInputTable .head {
+    width: 100px;
+}
+.partId {
+    text-align: center;
+}
+.conditionInputTable div {
+    /* width: 50px; */
+    height: 24px;
 }
 .conditionInput input[type="number"]{
-    width: 40px;
-}
-.conditionArr {
-    font-size: 12px;
+    width: 50px;
+    height: 100%;
 }
 .conditionTable {
     font-size: 12px;
@@ -60,18 +60,31 @@ ul {
     align-items: center;
     background-color: rgba(91, 118, 254, 0.2);
 }
-.conditionTable span {
+.conditionTable div {
     width: 50px;
 }
-.conditionTable span.headLabel {
+.conditionTable .head1 div {
+    width: 85px;
+}
+.conditionTable .head2 div {
+    width: 100px;
+}
+
+/* .conditionTable div.head {
     width: 85px;
     font-size: 12px;
-}
-.conditionTable span.timeTd {
+} */
+.conditionTable div.timeTd {
     width: 35px;
 }
 .conditionPartTimeTable {
     font-size: 12px;
     /* display: grid;
     grid-template-columns:60px 60px 60px; */
+}
+.tableSpan {
+    border-bottom: 1px solid rgba(91, 118, 254, 0.5);
+    height: 30px;
+    text-align: center;
+    padding-top: 5px;
 }
