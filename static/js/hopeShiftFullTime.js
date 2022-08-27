@@ -1,5 +1,5 @@
 new Vue({
-    el:"#createWorkDaySelect",
+    el:"#date",
     data:{
     },
     created() {

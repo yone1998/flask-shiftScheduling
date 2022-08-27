@@ -19,6 +19,41 @@ body {
 .error {
     color: red;
 }
+summary {
+    margin-bottom: 0.5rem;
+}
+label {
+    font-size: 1rem;
+    margin-right: 10px;
+}
+a {
+    font-size: 1rem;
+}
+span {
+    font-size: 1rem;
+}
+.column {
+    display: flex;
+    flex-flow: column;
+}
+.row {
+    display: flex;
+}
+.tableSpan {
+    border-bottom: 1px solid rgba(91, 118, 254, 0.5);
+    height: 30px;
+    text-align: center;
+    padding-top: 5px;
+}
+.opacity-half {
+    opacity: 0.5;
+}
+.padding-10 {
+    padding: 10px;
+}
+.bgc-lightBlue {
+    background-color: rgba(91, 118, 254, 0.2);
+}
 p, div {
     font-size: 1rem;
 }
@@ -46,27 +81,4 @@ h3 {
     font-size: 1rem;
     margin: 0.5rem 0;
     font-weight: bold;
-}
-summary {
-    margin-bottom: 0.5rem;
-}
-label {
-    font-size: 1rem;
-    margin-right: 10px;
-}
-a {
-    font-size: 1rem;
-}
-span {
-    font-size: 1rem;
-}
-.column {
-    display: flex;
-    flex-flow: column;
-}
-.row {
-    display: flex;
-}
-.padding-10 {
-    padding: 10px;
 }

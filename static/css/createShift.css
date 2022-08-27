@@ -43,7 +43,7 @@ label {
     font-size: 1rem;
 }
 .hopeShiftTable span.td {
-    font-size: 11px;
+    font-size: 12px;
 }
 .submitTable {
     display: grid;
@@ -51,12 +51,6 @@ label {
 }
 hr {
     width: 100%;
-}
-.tableSpan {
-    border-bottom: 1px solid rgba(91, 118, 254, 0.5);
-    height: 30px;
-    text-align: center;
-    padding-top: 5px;
 }
 .headLabel {
     background-color: rgba(91, 118, 254, 0.2);

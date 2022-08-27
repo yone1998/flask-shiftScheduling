@@ -13,7 +13,7 @@
     <p>休みを希望する日のブロックをクリックして赤くしてください<br>
         社員の勤務時間帯は{{ FULL_TIME_START_END_LIST[0] }}-{{ FULL_TIME_START_END_LIST[1] }}時で固定となっています</p>
     <form method="POST" class="calender">
-        <div id="createWorkDaySelect">
+        <div id="date" class="createWorkDaySelect">
             <!-- 日 月 火 水 木 金 土 -->
             {% for iSMTWTFS in SMTWTFS %}
                 {% if iSMTWTFS == '日' %}

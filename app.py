@@ -554,11 +554,6 @@ def userHome(userId):
                     ,hopeShift=hopeShift
                     ,LAST_EDIT_LIST=const.LAST_EDIT_LIST
                     )
-            # else: # 想定外のバグ（HopeShift.idはあるがHopeShiftTime.hope_shift_idにないIDがある状態）
-            #     # hopeShiftのレコードの削除
-            #     db.session.delete(hopeShift)
-            #     db.session.commit()
-            #     return redirect(url_for('userHome', userId=userId))
 
 @app.route('/<int:userId>/user/create/<string:part_full>/hopeShift', methods=['GET', 'POST'])
 def hopeShift(userId, part_full):
@@ -579,7 +574,6 @@ def hopeShift(userId, part_full):
             return render_template('hopeShiftPartTime.html'
                 ,userId=userId
                 ,isAdmin=isAdmin
-                ,SMTWTFS=const.SMTWTFS
                 ,DAY_STR_LIST=const.DAY_STR_LIST
                 ,WORK_TIME_RADIO_NAME_LIST=const.WORK_TIME_RADIO_NAME_LIST
                 ,DAYS_OF_TARGET_MONTH_LIST=DAYS_OF_TARGET_MONTH_LIST

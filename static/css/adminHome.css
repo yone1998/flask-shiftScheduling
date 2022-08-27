@@ -10,13 +10,18 @@
     display: grid;
     grid-template-columns: 80px 80px 80px 25px 25px;
 }
-hr {
+.description {
+    background-color: rgba(253, 253, 36, 0.4);
+    border-radius: 10px;
+    border: 1px solid orange;
+    padding: 10px;
+    margin-top: 10px;
+    width: 400px;
+}
+/* hr {
     grid-column: span 4;
     width: 100%;
-}
-.head, .head1, .head2 {
-    background-color: rgba(91, 118, 254, 0.2);
-}
+} */
 ul {
     padding-left: 20px;
 }
@@ -43,25 +48,27 @@ ul {
     /* width: 50px; */
     height: 24px;
 }
-.conditionInput input[type="number"]{
+.conditionInput input{
     width: 50px;
     height: 100%;
 }
 .conditionTable {
     font-size: 12px;
-    width: 425px;
+    width: 440px;
     margin-right: 20px;
 }
 .conditionTable .delete {
     width: 30px;
     padding-left: 5px;
     display: flex;
-    /* justify-content: center; */
     align-items: center;
-    background-color: rgba(91, 118, 254, 0.2);
+    background-color: rgba(254, 46, 60, 0.2);
 }
 .conditionTable div {
     width: 50px;
+}
+.conditionTable .timeTd div {
+    width: 35px;
 }
 .conditionTable .head1 div {
     width: 85px;
@@ -69,22 +76,6 @@ ul {
 .conditionTable .head2 div {
     width: 100px;
 }
-
-/* .conditionTable div.head {
-    width: 85px;
-    font-size: 12px;
-} */
-.conditionTable div.timeTd {
-    width: 35px;
-}
 .conditionPartTimeTable {
     font-size: 12px;
-    /* display: grid;
-    grid-template-columns:60px 60px 60px; */
-}
-.tableSpan {
-    border-bottom: 1px solid rgba(91, 118, 254, 0.5);
-    height: 30px;
-    text-align: center;
-    padding-top: 5px;
 }
