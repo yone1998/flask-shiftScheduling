@@ -13,7 +13,7 @@
             <h2>{{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月の希望シフト</h2>
             <p class="explain">休みを希望する日のチェックを外してください<br>
             勤務可能時間帯を選択してください</p>
-            <section class="workTimeSelect1">
+            <section class="headGrid">
                 <div for="empty"></div>
                 <div for="empty"></div>
                 <span class="startEndLabel workTimeSection">勤務開始時間</span>
@@ -21,12 +21,12 @@
 
                 <span class="hopeDayLabel">勤務可能</span>
                 <div for="empty"></div>
-                <section class="startTimeLabel workTimeLabel workTimeSection">
+                <section class="startTime workTimeLabel workTimeSection">
                 {% for startTime in PART_TIME_START_OPTION_LIST %}
                     <label>{{ startTime }}</label>
                 {% endfor %}
                 </section>
-                <section class="endTimeLabel workTimeLabel workTimeSection">
+                <section class="endTime workTimeLabel workTimeSection">
                 {% for endTime in PART_TIME_END_OPTION_LIST %}
                     <label>{{ endTime }}</label>
                 {% endfor %}
@@ -34,63 +34,44 @@
             </section>
         </nav>
     </header>
-    <form method="POST" id="workTimeSelect" class="workTimeSelect2">
-        {% for iDay in range( DAY_STR_LIST | length ) %}
-            <!-- 勤務可能日（デフォルト）のとき -->
-            {% if defaultHopeDayList[iDay] == 1 %}
+    <form method="POST" id="workTimeSelect">
+        <section class="formGrid">
+            {% for iDay in range( DAY_STR_LIST | length ) %}
+                <!-- 勤務可能日（デフォルト）のとき -->
                 <input
-                    class="hopeDayCheckBox isHopeDay" @click="switchHopeDay" type="checkbox" checked="checked"
-                    id="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                    name="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
+                    class="hopeDayCheckBox" type="checkbox"
+                    id="day_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
+                    name="day{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
+                    {{'checked="checked"' if defaultIsHopeDayList[iDay] else '' }}
                 >
-            <!-- 希望休のとき -->
-            {% elif defaultHopeDayList[iDay] == 0 %}
-                <input
-                    class="hopeDayCheckBox" @click="switchHopeDay" type="checkbox"
-                    id="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-                    name="hopeDayCheckBox_{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
+                <label
+                    class="dayLabel"
+                    id="dayLabel{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
                 >
-            {% endif %}
-            <label
-                class="dayLabel"
-                id="dayLabel{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"
-            >
-            {{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}
-            </label>
-            <section class="startTimeLabel workTimeRadio workTimeSection" id="start{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
-            {% for iStart in PART_TIME_START_OPTION_LIST %}
-                {% if iStart == defaultStartList[iDay] %}
+                {{ iDay+1 }} {{ DAY_STR_LIST[iDay] }}
+                </label>
+                <section class="startTime workTimeRadio workTimeSection" id="start{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
+                {% for iStart in PART_TIME_START_OPTION_LIST %}
                     <input
-                        type="radio" value="{{ iStart }}" checked="checked"
+                        type="radio" value="{{ iStart }}"
                         name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay] }}"
+                        {{'checked="checked"' if defaultIsStartList[iDay][loop.index0] else '' }}
                     >
-                {% else %}
-                    <input
-                        type="radio" value="{{ iStart}}"
-                        name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay] }}"
-                    >
-                {% endif %}
-            {% endfor %}
-            </section>
-            <div id="startEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
-            <section class="endTimeLabel workTimeRadio workTimeSection" id="end{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
-            {% for iEnd in PART_TIME_END_OPTION_LIST %}
-                {% if iEnd == defaultEndList[iDay] %}
-                    <input
-                        type="radio" value="{{ iEnd }}" checked="checked"
-                        name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay+1] }}"
-                    >
-                {% else %}
+                {% endfor %}
+                </section>
+                <div id="startEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
+                <section class="endTime workTimeRadio workTimeSection" id="end{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}">
+                {% for iEnd in PART_TIME_END_OPTION_LIST %}
                     <input
                         type="radio" value="{{ iEnd }}"
                         name="{{ WORK_TIME_RADIO_NAME_LIST[2*iDay+1] }}"
+                        {{'checked="checked"' if defaultIsEndList[iDay][loop.index0] else '' }}
                     >
-                {% endif %}
+                {% endfor %}
+                </section>
+                <div id="endEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
             {% endfor %}
-            </section>
-            <div id="endEmpty{{ DAYS_OF_TARGET_MONTH_LIST[iDay] }}"></div>
-        {% endfor %}
-        <br>
+        </section>
         <br>
         {% if isAdmin %}
             <a href="/admin/home" role="button" class="btn btn-primary">キャンセル</a>

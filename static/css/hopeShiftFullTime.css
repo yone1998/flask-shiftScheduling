@@ -1,37 +1,25 @@
 .container {
-    margin: 10px;
-    width: 375px;
+  margin: 10px;
+  width: 375px;
 }
-.explain {
-    font-size: 16px;
+.container .createWorkDaySelect {
+  font-size: 17px;
+  display: grid;
+  grid-template-columns: 50px 50px 50px 50px 50px 50px 50px;
 }
-.targetDateStr {
-    font-size: 18px;
+.container .createWorkDaySelect .calendarBlock {
+  width: 48px;
+  height: 45px;
+  border: 1px solid;
+  border-color: gray;
+  background-color: rgb(245, 245, 245);
 }
-.createWorkDaySelect {
-    font-size: 17px;
-    display: grid;
-    grid-template-columns: 50px 50px 50px 50px 50px 50px 50px;
+.container .createWorkDaySelect .calendarBlock label {
+  border: 1px solid black;
 }
-.calendarBlock {
-    width: 48px;
-    height: 45px;
-    border: 1px solid;
-    border-color: gray;
-    background-color: rgb(245, 245, 245);
+.container .createWorkDaySelect .calendarBlock input {
+  display: none;
 }
-.SMTWTFS {
-    height: 27px;
-}
-.Sunday {
-    color: red;
-}
-.Saturday {
-    color: blue;
-}
-input[type=checkbox] {
-    display: none;
-}
-label {
-    border: 1px solid black;
-}
+.container .createWorkDaySelect .head {
+  height: 27px;
+}/*# sourceMappingURL=hopeShiftFullTime.css.map */

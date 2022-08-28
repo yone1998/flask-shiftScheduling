@@ -1,32 +1,22 @@
-new Vue({
-    el:"#date",
-    data:{
-    },
-    created() {
-        let iDay = 1
-        while (document.getElementById('dayLabel' + iDay)) {
-            const element = document.getElementById('dayLabel' + iDay)
-            console.log('test')
-            console.log(window.getComputedStyle(element).color)
-            if (element.classList.contains("isHopeDay")) {
-                element.style.backgroundColor = 'rgb(245, 245, 245)'
-            } else {
-                element.style.backgroundColor = 'pink'
-            }
-            iDay += 1
+{
+    let iDay = 1
+    while (document.getElementById('dayLabel' + iDay)) {
+        const checkbox = document.getElementById('day'+iDay);
+        const label = document.getElementById('dayLabel' + iDay)
+        if (checkbox.checked) {
+            label.style.backgroundColor = 'rgb(245, 245, 245)'
+        } else {
+            label.style.backgroundColor = 'pink'
         }
-    },
-    methods:{
-        switchHopeDay:function(event){
-            const element = event.target
-            if (element.classList.contains("isHopeDay")) {
-                element.classList.remove("isHopeDay")
-                element.style.backgroundColor = 'pink'
+
+        checkbox.addEventListener('click', function(){
+            if (checkbox.checked) {
+                label.style.backgroundColor = 'rgb(245, 245, 245)'
             } else {
-                element.classList.add("isHopeDay")
-                element.style.backgroundColor = 'rgb(245, 245, 245)'
+                label.style.backgroundColor = 'pink'
             }
-        }
-    },
-    delimiters: ['[[', ']]']
-})
+        });
+
+        iDay += 1
+    }
+}

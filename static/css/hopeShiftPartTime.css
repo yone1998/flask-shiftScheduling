@@ -1,83 +1,67 @@
-.container {
-    margin: 10px;
-    width: 375px;
-}
-header {
-    top: 0;
-    position:fixed;
-    height: 176px;
-    background-color: white;
-    border-bottom: 1px solid;
-}
-a {
-    font-size: 16px;
-}
-.workTimeSelect1 {
-    font-size: 17px;
-    display: grid;
-    grid-template-columns: 60px 70px 90px 130px;
-    place-items: center;
-}
-.workTimeSelect2 {
-    font-size: 17px;
-    display: grid;
-    grid-template-columns: 60px 70px 90px 130px;
-    place-items: center;
-    margin-top: 176px;
-    /* height: 30px; */
-}
-.hopeDayCheckBox {
-    padding-top: 30%;
-    /* height: 30px; */
-    width: 60px;
-    accent-color: gray;
-}
-input[type="radio"] {
-    accent-color: gray;
-}
-.dayLabel {
-    padding-top: 10%;
-    font-size: 16px;
-    font-weight: bold;
-    height: 30px;
-    width: 70px;
-    text-align: center;
-}
-.startTimeLabel {
-    width: 80px;
-}
-.endTimeLabel {
-    width: 120px;
-}
-.hopeDayLabel {
-    font-size: 14px;
-}
-.monthLabel {
-    font-size: 14px;
-}
-.startEndLabel {
-    font-size: 15px;
-}
-.hopeHoliday{
-    /* 訂正線 */
-    text-decoration: line-through;
-}
-.Sunday {
-    color: red;
-}
-.Saturday {
-    color: blue;
-}
-hr {
-    grid-column: span 3;
-    width: 100%;
-}
-.workTimeLabel {
-    font-size: 15px;
-    font-weight: normal;
+label {
+  font-size: 0.9rem;
 }
 
-.workTimeSection {
-    display: flex;
-    justify-content: space-evenly;
+.container {
+  margin: 10px;
+  width: 375px;
 }
+.container header {
+  top: 0;
+  position: fixed;
+  height: 176px;
+  background-color: white;
+  border-bottom: 1px solid;
+}
+.container header .headGrid {
+  font-size: 17px;
+  display: grid;
+  grid-template-columns: 60px 70px 90px 130px;
+  place-items: center;
+}
+.container header .headGrid .startEndLabel {
+  font-size: 15px;
+}
+.container header .headGrid .hopeDayLabel {
+  font-size: 14px;
+}
+.container header .headGrid .workTimeLabel {
+  font-size: 15px;
+  font-weight: normal;
+}
+.container .formGrid {
+  font-size: 17px;
+  display: grid;
+  grid-template-columns: 60px 70px 90px 130px;
+  place-items: center;
+  margin-top: 176px;
+}
+.container .formGrid .hopeDayCheckBox {
+  padding-top: 30%;
+  /* height: 30px; */
+  width: 60px;
+  accent-color: gray;
+}
+.container .formGrid .dayLabel {
+  font-size: 16px;
+  font-weight: bold;
+  height: 30px;
+  width: 70px;
+  text-align: center;
+}
+.container .formGrid .workTimeRadio input {
+  accent-color: gray;
+}
+.container .workTimeSection {
+  display: flex;
+  justify-content: space-evenly;
+}
+.container .startTime {
+  width: 80px;
+}
+.container .endTime {
+  width: 120px;
+}
+.container a {
+  font-size: 16px;
+}/*# sourceMappingURL=hopeShiftPartTime.css.map */

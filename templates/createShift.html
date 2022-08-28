@@ -18,29 +18,29 @@
             <hr>
         {% endif %}
     {% endwith %}
-    <h2>作成手順</h2>
-    <p>チェックボックスを上から順に埋めてください</p>
-    <hr>
     <details class="padding-10" open="true">
         <summary><span class="h2">祝日・祝前日の設定</span></summary>
         <form method="POST" id="specialDay" class="specialDayArr" @submit="checkForm" novalidate="true">
             <section class="specialDayInputBlock">
-                <label>
-                    {{ CONDITION_LIST[0] }}
-                    <select name="event" v-model="event" required="required" v-cloak>
-                        <option value="4">{{ EVENT_LIST[4] }}</option>
-                        <option value="5">{{ EVENT_LIST[5] }}</option>
-                    </select>
-                </label>
-                <label>
+                <div>
                     {{ TARGET_YEAR_MONTH[0] }}年{{ TARGET_YEAR_MONTH[1] }}月
                     <select name="day" v-model="day" required="required">
                         {% for iDay in range(SUM_DAYS_OF_TARGET_MONTH) %}
                             <option value="{{ iDay+1 }}">{{ iDay+1 }}</option>
                         {% endfor %}
                     </select> 日
-                </label>
-                <label class="error" v-if="isAnyNone" v-cloak>入力もれがあります</label>
+                </div>
+                <!-- <div>
+                    {{ CONDITION_LIST[0] }}
+                    <select name="event" v-model="event" required="required">
+                        <option value="4">{{ EVENT_LIST[4] }}</option>
+                        <option value="5">{{ EVENT_LIST[5] }}</option>
+                    </select>
+                </div> -->
+                <div>▼ 選択してください</div>
+                <div><input type="radio" v-model="event" value="4" name="event" required="required"> {{ EVENT_LIST[4] }}</div>
+                <div><input type="radio" v-model="event" value="5" name="event" required="required"> {{ EVENT_LIST[5] }}</div>
+                <div class="error" v-if="isAnyNone" v-cloak>入力もれがあります</div>
             </section>
             <input type="submit" class="btn btn-primary" value="追加する" formaction="/admin/create/shift/add/specialDay" formmethod="POST">
         </form>
@@ -73,7 +73,7 @@
                 <span class="tableSpan headLabel">レベル</span>
                 {% for iDay in range(31) %}
                     {% if iDay < SUM_DAYS_OF_TARGET_MONTH %}
-                        <span for="empty" class="tableSpan headLabel">{{ iDay+1 }}</span>
+                        <span class="tableSpan headLabel">{{ iDay+1 }}</span>
                     {% else %}
                         <span for="empty" class="tableSpan headLabel"></span>
                     {% endif %}

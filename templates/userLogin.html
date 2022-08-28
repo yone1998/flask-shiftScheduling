@@ -27,10 +27,14 @@
         <input type="submit" value="送信" class="btn btn-primary">
     </form>
     <hr>
-    <p>はじめての利用ですか？</p>
-    <a href="/signup" role="button">新規登録の方はこちらから</a>
-    <br>
-    <a href="/adminLogin" role="button">管理者としてログインする</a>
+    <p>パスワードを忘れた場合<br>
+    <a href="/resetPassword" role="button">パスワードの再設定</a></p>
+    <p>メールアドレスを忘れた場合<br>
+    <a href="/signup" role="button">新規登録</a>から登録しなおしてください</p>
+    <p>はじめての利用ですか？<br>
+    <a href="/signup" role="button">新規登録</a></p>
+    <p>シフト作成担当者はこちらから<br>
+    <a href="/adminLogin" role="button">管理者用ログインページ</a></p>
 </div>
 <script src="{{ url_for('static', filename='js/userLogin.js') }}"></script>
 {% endblock %}

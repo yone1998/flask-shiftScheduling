@@ -1,0 +1,81 @@
+label {
+    margin-right: 10px;
+}
+
+.container {
+    margin: 10px auto;
+    width: 1024px;
+
+    .targetMonthTable {
+        display: grid;
+        grid-template-columns: 80px 80px 150px 100px 25px 25px;
+    }
+
+    .userTable {
+        display: grid;
+        grid-template-columns: 80px 80px 80px 25px 25px;
+    }
+
+    .conditionForm {
+        font-size: 12px;
+
+        .conditionInput {
+            background-color: rgb(218, 251, 208);
+            border: 1px solid green;
+            padding: 10px;
+            border-radius: 10px;
+            width: 420px;
+
+            input{
+                width: 50px;
+                height: 100%;
+            }
+
+            .conditionInputTable {
+                width: 350px;
+
+                div {
+                    height: 24px;
+                }
+
+                .head {
+                    width: 100px;
+                }
+
+                .partId {
+                    text-align: center;
+                }
+            }
+        }
+    }
+
+    .conditionTable {
+        font-size: 12px;
+        width: 440px;
+        margin-right: 20px;
+
+        .delete {
+            width: 30px;
+            padding-left: 5px;
+            display: flex;
+            align-items: center;
+            background-color: rgba(254, 46, 60, 0.2);
+        }
+
+        div {
+            width: 50px;
+        }
+
+        .timeTd div {
+            width: 35px;
+        }
+
+        .head1 div {
+            width: 85px;
+        }
+
+        .head2 div {
+            width: 100px;
+        }
+    }
+}

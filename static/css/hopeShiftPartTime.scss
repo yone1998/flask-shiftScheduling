@@ -1,0 +1,79 @@
+label {
+    font-size: 0.9rem;
+}
+
+.container {
+    margin: 10px;
+    width: 375px;
+
+    header {
+        top: 0;
+        position:fixed;
+        height: 176px;
+        background-color: white;
+        border-bottom: 1px solid;
+
+        .headGrid {
+            font-size: 17px;
+            display: grid;
+            grid-template-columns: 60px 70px 90px 130px;
+            place-items: center;
+
+            .startEndLabel {
+                font-size: 15px;
+            }
+
+            .hopeDayLabel {
+                font-size: 14px;
+            }
+
+            .workTimeLabel {
+                font-size: 15px;
+                font-weight: normal;
+            }
+        }
+    }
+
+    .formGrid {
+        font-size: 17px;
+        display: grid;
+        grid-template-columns: 60px 70px 90px 130px;
+        place-items: center;
+        margin-top: 176px;
+
+        .hopeDayCheckBox {
+            padding-top: 30%;
+            /* height: 30px; */
+            width: 60px;
+            accent-color: gray;
+        }
+
+        .dayLabel {
+            font-size: 16px;
+            font-weight: bold;
+            height: 30px;
+            width: 70px;
+            text-align: center;
+        }
+
+        .workTimeRadio input {
+            accent-color: gray;
+        }
+    }
+    .workTimeSection {
+        display: flex;
+        justify-content: space-evenly;
+    }
+
+    .startTime {
+        width: 80px;
+    }
+
+    .endTime {
+        width: 120px;
+    }
+
+    a {
+        font-size: 16px;
+    }
+}

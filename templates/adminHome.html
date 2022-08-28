@@ -101,11 +101,11 @@
     <hr>
     <details class="padding-10" open="true">
         <summary><span class="h2">条件の設定</span></summary>
-        <form method="POST" class="condition" id="condition" @submit="checkForm" novalidate="true">
+        <form method="POST" class="conditionForm" id="condition" @submit="checkForm" novalidate="true">
             <section class="conditionInput">
                 <label>
                     {{ CONDITION_LIST[0] }}
-                    <select name="event" v-model="event" required="required" v-cloak>
+                    <select name="event" v-model="event" required="required">
                         <option value="0">{{ EVENT_LIST[0] }}</option>
                         <option value="1">{{ EVENT_LIST[1] }}</option>
                         <option value="2">{{ EVENT_LIST[2] }}</option>

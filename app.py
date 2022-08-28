@@ -54,7 +54,6 @@ from calendar import month
 from flask import Flask, flash, render_template, redirect, url_for, request, session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_
-from flask_bootstrap import Bootstrap
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 # from flask_wtf.csrf import CSRFProtect
@@ -72,7 +71,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shift.db'
 
 # csrf = CSRFProtect(app)
 db        = SQLAlchemy(app, session_options={"autoflush": False})
-bootstrap = Bootstrap(app)
 admin     = Admin(app)
 
 class User(db.Model):
@@ -186,8 +184,8 @@ def form2list(tableName, **arg):
             startList = []
             endList = []
             for iDay in const.DAYS_OF_TARGET_MONTH_LIST:
-                print(request.form.get(f'hopeDayCheckBox_{iDay}'))
-                if request.form.get(f'hopeDayCheckBox_{iDay}'):
+                print(request.form.get(f'day{iDay}'))
+                if request.form.get(f'day{iDay}'):
                     hopeDayList.append(iDay)
                     startList.append(int(request.form.get(f'start_{iDay}')))
                     endList.append(int(request.form.get(f'end_{iDay}')))
@@ -246,8 +244,9 @@ def getIdOfTargetRecord(tableName, **filter):
             year=filter['year']
             ,month=filter['month']
             ,day=filter['day']
-            ,event=filter['event']
             ).one_or_none()
+        print('--------------')
+        print(specialDay)
         if specialDay:
             return specialDay.id
         else:
@@ -368,14 +367,18 @@ def addRecords(target, **arg):
         print('add SpecialDay record')
 
 def table2defaultHopeShiftList(userId, part_full):
+    PART_FULL_ENG_LIST = const.PART_FULL_ENG_LIST
     DAYS_OF_TARGET_MONTH_LIST = const.DAYS_OF_TARGET_MONTH_LIST
-    defaultHopeDayList = [1]*len(DAYS_OF_TARGET_MONTH_LIST)
-    if part_full == const.PART_FULL_ENG_LIST[0]:
-        defaultStartList = [const.PART_TIME_START_END_DEFAULT_LIST[0]]*len(defaultHopeDayList)
-        defaultEndList = [const.PART_TIME_START_END_DEFAULT_LIST[1]]*len(defaultHopeDayList)
-    elif part_full == const.PART_FULL_ENG_LIST[1]:
-        defaultStartList = [const.FULL_TIME_START_END_LIST[0]]*len(defaultHopeDayList)
-        defaultEndList = [const.FULL_TIME_START_END_LIST[1]]*len(defaultHopeDayList)
+    PART_TIME_START_END_DEFAULT_LIST = const.PART_TIME_START_END_DEFAULT_LIST
+    FULL_TIME_START_END_LIST = const.FULL_TIME_START_END_LIST
+
+    # 初期値
+    if part_full == PART_FULL_ENG_LIST[0]:
+        defaultStartList = [PART_TIME_START_END_DEFAULT_LIST[0]]*len(DAYS_OF_TARGET_MONTH_LIST)
+        defaultEndList = [PART_TIME_START_END_DEFAULT_LIST[1]]*len(DAYS_OF_TARGET_MONTH_LIST)
+    elif part_full == PART_FULL_ENG_LIST[1]:
+        defaultStartList = [FULL_TIME_START_END_LIST[0]]*len(DAYS_OF_TARGET_MONTH_LIST)
+        defaultEndList = [FULL_TIME_START_END_LIST[1]]*len(DAYS_OF_TARGET_MONTH_LIST)
 
     hopeShiftId = getIdOfTargetRecord(
         'hope_shift'
@@ -383,14 +386,28 @@ def table2defaultHopeShiftList(userId, part_full):
         ,targetYearMonth = const.TARGET_YEAR_MONTH
         )
     if hopeShiftId:
-        defaultHopeDayList = [0]*len(DAYS_OF_TARGET_MONTH_LIST)
+        defaultIsHopeDayList = [False]*len(DAYS_OF_TARGET_MONTH_LIST)
         hopeShiftTimeArr = HopeShiftTime.query.filter_by(hope_shift_id=hopeShiftId).order_by(HopeShiftTime.day).all()
         for hopeShiftTime in hopeShiftTimeArr:
-            defaultHopeDayList[hopeShiftTime.day-1] = 1
+            defaultIsHopeDayList[hopeShiftTime.day-1] = True
             defaultStartList[hopeShiftTime.day-1] = hopeShiftTime.start
             defaultEndList[hopeShiftTime.day-1] = hopeShiftTime.end
+    else:
+        defaultIsHopeDayList = [True]*len(DAYS_OF_TARGET_MONTH_LIST)
 
-    return defaultHopeDayList, defaultStartList, defaultEndList
+    return defaultIsHopeDayList, defaultStartList, defaultEndList
+
+def binaryHopeShiftList(defaultStartList, defaultEndList):
+    PART_TIME_START_OPTION_LIST = const.PART_TIME_START_OPTION_LIST
+    PART_TIME_END_OPTION_LIST = const.PART_TIME_END_OPTION_LIST
+
+    defaultIsStartList = [[False]*len(PART_TIME_START_OPTION_LIST) for _ in range(len(defaultStartList))]
+    defaultIsEndList = [[False]*len(PART_TIME_END_OPTION_LIST) for _ in range(len(defaultEndList))]
+    for iDay in range(len(defaultStartList)):
+        defaultIsStartList[iDay][PART_TIME_START_OPTION_LIST.index(defaultStartList[iDay])] = True
+        defaultIsEndList[iDay][PART_TIME_END_OPTION_LIST.index(defaultEndList[iDay])] = True
+
+    return defaultIsStartList, defaultIsEndList
 
 
 @app.route('/test', methods=['GET'])
@@ -566,11 +583,15 @@ def hopeShift(userId, part_full):
             return redirect(url_for('userLogin'))
 
     if request.method == 'GET':
-        # hopeDay、start、endのデフォルトリストを作成
-        defaultHopeDayList, defaultStartList, defaultEndList = table2defaultHopeShiftList(userId, part_full)
+        PART_FULL_ENG_LIST = const.PART_FULL_ENG_LIST
         DAYS_OF_TARGET_MONTH_LIST = const.DAYS_OF_TARGET_MONTH_LIST
 
-        if part_full == const.PART_FULL_ENG_LIST[0]:
+        # hopeDay、start、endのデフォルトリストを作成
+        defaultIsHopeDayList, defaultStartList, defaultEndList = table2defaultHopeShiftList(userId, part_full)
+        if part_full == PART_FULL_ENG_LIST[0]:
+            defaultIsStartList, defaultIsEndList = binaryHopeShiftList(defaultStartList, defaultEndList)
+
+        if part_full == PART_FULL_ENG_LIST[0]:
             return render_template('hopeShiftPartTime.html'
                 ,userId=userId
                 ,isAdmin=isAdmin
@@ -582,13 +603,13 @@ def hopeShift(userId, part_full):
                 ,PART_TIME_END_OPTION_LIST=const.PART_TIME_END_OPTION_LIST
                 ,PART_TIME_START_END_DEFAULT_LIST=const.PART_TIME_START_END_DEFAULT_LIST
                 ,TARGET_YEAR_MONTH=const.TARGET_YEAR_MONTH
-                ,defaultHopeDayList=defaultHopeDayList
-                ,defaultStartList=defaultStartList
-                ,defaultEndList=defaultEndList
+                ,defaultIsHopeDayList=defaultIsHopeDayList
+                ,defaultIsStartList=defaultIsStartList
+                ,defaultIsEndList=defaultIsEndList
                 )
 
-        elif part_full == const.PART_FULL_ENG_LIST[1]:
-            print(defaultHopeDayList)
+        elif part_full == PART_FULL_ENG_LIST[1]:
+            print(defaultIsHopeDayList)
             return render_template('hopeShiftFullTime.html'
                 ,userId=userId
                 ,isAdmin=isAdmin
@@ -599,7 +620,7 @@ def hopeShift(userId, part_full):
                 ,FIRST_SUNDAY_TARGET_MONTH=const.FIRST_SUNDAY_TARGET_MONTH
                 ,FULL_TIME_START_END_LIST=const.FULL_TIME_START_END_LIST
                 ,TARGET_YEAR_MONTH=const.TARGET_YEAR_MONTH
-                ,defaultHopeDayList=defaultHopeDayList
+                ,defaultIsHopeDayList=defaultIsHopeDayList
                 )
 
     elif request.method == 'POST':
@@ -726,9 +747,9 @@ def createShift():
         for user, _ in hopeShiftArr:
             userId = user.id
             part_full = const.PART_FULL_ENG_LIST[user.is_full_time]
-            hopeDayList, startList, endList = table2defaultHopeShiftList(userId, part_full)
+            isHopeDayList, startList, endList = table2defaultHopeShiftList(userId, part_full)
             startEndList = []
-            for iDay, hopeDay in enumerate(hopeDayList):
+            for iDay, hopeDay in enumerate(isHopeDayList):
                 if hopeDay:
                     startEndList.append(f'{startList[iDay]}-{endList[iDay]}')
                 else:
@@ -820,8 +841,8 @@ def addSpecialDay():
             ,year=year
             ,month=month
             ,day=day
-            ,event = event
             )
+        print(deleteSpecialDayId)
 
         # 既存の対象レコードの削除
         if deleteSpecialDayId is not None:
@@ -849,3 +870,6 @@ def logout():
     else:
         tryClearSession()
         return redirect(url_for('userLogin'))
+
+# @app.route('/resetPassword', methods=['GET', 'POST'])
+# def resetPassword():
