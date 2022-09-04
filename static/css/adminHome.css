@@ -8,41 +8,41 @@ label {
 }
 .container .targetMonthTable {
   display: grid;
-  grid-template-columns: 80px 80px 150px 100px 25px 25px;
+  grid-template-columns: 80px 80px 150px 100px 25px;
 }
 .container .userTable {
   display: grid;
   grid-template-columns: 80px 80px 80px 25px 25px;
 }
+.container .description {
+  width: 250px;
+}
 .container .conditionForm {
   font-size: 12px;
 }
-.container .conditionForm .conditionInput {
+.container .conditionForm .conditionInputBlock {
   background-color: rgb(218, 251, 208);
   border: 1px solid green;
   padding: 10px;
   border-radius: 10px;
-  width: 420px;
+  width: 425px;
 }
-.container .conditionForm .conditionInput input {
+.container .conditionForm .conditionInputBlock input {
   width: 50px;
   height: 100%;
 }
-.container .conditionForm .conditionInput .conditionInputTable {
-  width: 350px;
-}
-.container .conditionForm .conditionInput .conditionInputTable div {
+.container .conditionForm .conditionInputBlock .conditionInputTable div {
   height: 24px;
 }
-.container .conditionForm .conditionInput .conditionInputTable .head {
+.container .conditionForm .conditionInputBlock .conditionInputTable .head {
   width: 100px;
 }
-.container .conditionForm .conditionInput .conditionInputTable .partId {
+.container .conditionForm .conditionInputBlock .conditionInputTable .partId {
   text-align: center;
 }
 .container .conditionTable {
   font-size: 12px;
-  width: 440px;
+  width: 455px;
   margin-right: 20px;
 }
 .container .conditionTable .delete {
@@ -53,14 +53,14 @@ label {
   background-color: rgba(254, 46, 60, 0.2);
 }
 .container .conditionTable div {
-  width: 50px;
+  width: 45px;
 }
 .container .conditionTable .timeTd div {
   width: 35px;
 }
 .container .conditionTable .head1 div {
-  width: 85px;
+  width: 95px;
 }
 .container .conditionTable .head2 div {
-  width: 100px;
+  width: 110px;
 }/*# sourceMappingURL=adminHome.css.map */

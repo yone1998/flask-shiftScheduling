@@ -1,3 +1,5 @@
+$maxPart: 5;
+
 label {
     margin-right: 10px;
 }
@@ -8,7 +10,7 @@ label {
 
     .targetMonthTable {
         display: grid;
-        grid-template-columns: 80px 80px 150px 100px 25px 25px;
+        grid-template-columns: 80px 80px 150px 100px 25px;
     }
 
     .userTable {
@@ -16,30 +18,46 @@ label {
         grid-template-columns: 80px 80px 80px 25px 25px;
     }
 
+    .description {
+        width: 250px;
+    }
+
     .conditionForm {
         font-size: 12px;
 
-        .conditionInput {
+        .conditionInputBlock {
+            $widthInput: 50px;
+            $widthHead: 100px;
+            $paddingBlock: 10px;
+
+            $widthCondtionInputBlock: 425px;
+                // $widthTable
+                // + 2*$paddingBlock
+                // + (3*16);
+            $widthTable:
+                $widthHead
+                + $maxPart*$widthInput;
+
             background-color: rgb(218, 251, 208);
             border: 1px solid green;
-            padding: 10px;
+            padding: $paddingBlock;
             border-radius: 10px;
-            width: 420px;
+            width: $widthCondtionInputBlock;
 
-            input{
-                width: 50px;
+            input {
+                width: $widthInput;
                 height: 100%;
             }
 
             .conditionInputTable {
-                width: 350px;
+                // width: $widthTable;
 
                 div {
                     height: 24px;
                 }
 
                 .head {
-                    width: 100px;
+                    width: $widthHead;
                 }
 
                 .partId {
@@ -50,12 +68,22 @@ label {
     }
 
     .conditionTable {
+        $widthDelete: 30px;
+        $widthHead1: 95px;
+        $widthDiv: 45px;
+        $widthHead2: 110px;
+        $widthTimeTd: 35px;
+
         font-size: 12px;
-        width: 440px;
+        width: $widthDelete
+            + $widthHead1
+            + $widthDiv
+            + $widthHead2
+            + $maxPart*$widthTimeTd;
         margin-right: 20px;
 
         .delete {
-            width: 30px;
+            width: $widthDelete;
             padding-left: 5px;
             display: flex;
             align-items: center;
@@ -63,19 +91,19 @@ label {
         }
 
         div {
-            width: 50px;
+            width: $widthDiv;
         }
 
         .timeTd div {
-            width: 35px;
+            width: $widthTimeTd;
         }
 
         .head1 div {
-            width: 85px;
+            width: $widthHead1;
         }
 
         .head2 div {
-            width: 100px;
+            width: $widthHead2;
         }
     }
 }

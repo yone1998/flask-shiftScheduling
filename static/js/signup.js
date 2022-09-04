@@ -27,6 +27,7 @@ const app = new Vue({
                 ) {
                 if (
                     this.name.length <= 5
+                    && this.validEmail(this.email)
                     && this.password === this.passwordCheck
                     && this.password.length <= 20
                     && this.passwordCheck.length <= 20
@@ -48,7 +49,7 @@ const app = new Vue({
                     if (this.passwordCheck.length > 20) {
                         this.isOverPasswordCheck = true;
                     }
-
+                    
                     e.preventDefault();
                 }
             } else {

@@ -10,21 +10,27 @@
 <div class="adminLogin">
     <h3>管理者ログイン</h3>
     <br>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="{{ category }}">{{ message }}</div>
-            {% endfor %}
-            <hr>
-        {% endif %}
-    {% endwith %}
-    <form method="POST">
-        <label class="form-label">認証コード</label>
-        <input type="text" name="adminAuthenticationCode" class="form-control">
+    <form method="POST" id="app" @submit="checkForm" novalidate="true">
+        <div>
+            認証コード<br>
+            <input type="text" v-model="authenticationCode" name="authenticationCode">
+            <div class="no" v-if="isNoneAuthenticationCode" v-cloak>認証コードを入力してください</div>
+            {% if messageDictList %}
+                {% for messageDict in messageDictList %}
+                    {% if messageDict['id'] == 'authenticationCode' %}
+                        <section v-if="isShowMessage_{{ messageDict['id'] }}" {{ 'class=ok' if messageDict['isOk'] else 'class=no' }}>
+                            <div>{{ messageDict['message'] }}</div>
+                        </section>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
+
         <br>
-        <input type="submit" value="送信" class="btn btn-primary">
+        <input type="submit" value="送信">
     </form>
     <hr>
     <a href="/userLogin" role="button">戻る（一般ユーザーとしてログインする）</a>
 </div>
+<script src="{{ url_for('static', filename='js/adminLogin.js') }}"></script>
 {% endblock %}

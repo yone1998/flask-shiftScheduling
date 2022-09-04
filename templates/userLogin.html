@@ -18,19 +18,27 @@
         {% endif %}
     {% endwith %}
     <form method="POST" id="app" @submit="checkForm" novalidate="true">
-        <label class="form-label">メールアドレス<br>
-            <input type="email" v-model="email" name="email" class="form-control"></label>
-        <label class="error" v-if="isNoneEmail" v-cloak>メールアドレスが入力されていません</label>
-        <label class="form-label">パスワード<br>
-            <input type="password" v-model="password" name="password" class="form-control"></label>
-        <label class="error" v-if="isNonePassword" v-cloak>パスワードが入力されていません</label>
-        <input type="submit" value="送信" class="btn btn-primary">
+        <section>
+            メールアドレス<br>
+            <input type="email" v-model="email" name="email">
+            <div class="no" v-if="isNoneEmail" v-cloak>メールアドレスを入力してください</div>
+            <div class="no" v-if="isNotGoodEmail" v-cloak>メールアドレスの形式が間違っています</div>
+        </section>
+        <br>
+        <section>
+            パスワード（半角英数字のみ・20文字以内）<br>
+            <input type="password" v-model="password" name="password">
+            <div class="no" v-if="isNonePassword" v-cloak>パスワードを入力してください</div>
+            <div class="no" v-if="isOverPassword" v-cloak>パスワードは20文字以内です</div>
+        </section>
+        <br>
+        <input type="submit" value="送信">
     </form>
-    <hr>
+    <br>
     <p>パスワードを忘れた場合<br>
-    <a href="/resetPassword" role="button">パスワードの再設定</a></p>
+    <a href="/sendResetPasswordUrl" role="button">パスワードの再設定</a></p>
     <p>メールアドレスを忘れた場合<br>
-    <a href="/signup" role="button">新規登録</a>から登録しなおしてください</p>
+    新規登録から登録しなおしてください</p>
     <p>はじめての利用ですか？<br>
     <a href="/signup" role="button">新規登録</a></p>
     <p>シフト作成担当者はこちらから<br>

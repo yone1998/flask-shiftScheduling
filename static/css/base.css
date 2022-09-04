@@ -13,10 +13,28 @@ body {
     border-radius: 4px;
 }
 
-.ng {
+/* .ok div {
     font-size: 18px;
-    color: red;
+    color: blue;
     border-radius: 4px;
+} */
+
+.no {
+    margin-top: 10px;
+    color: rgb(226, 15, 15);
+    font-size: 0.8rem;
+    /* background-color: rgba(255, 0, 0, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 0, 0, 0.1); */
+}
+
+.no div {
+    display: flex;
+    align-items: center;
+}
+
+.no img {
+    margin: 0 3px 0 2px;
 }
 
 .red {
@@ -25,10 +43,6 @@ body {
 
 .blue {
     color: blue;
-}
-
-.error {
-    color: red;
 }
 
 summary {
@@ -47,13 +61,9 @@ span {
     font-size: 1rem;
 }
 
-.column {
+.row1 {
     display: flex;
-    flex-flow: column;
-}
-
-.row {
-    display: flex;
+    flex-direction: row;
 }
 
 .tableSpan {
